@@ -1,0 +1,15 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <p> userform </p>
+        <form action="login.php">
+            <p> name : </p>
+            <input type= "text" name = "username"/>
+            <p> password : </p>
+            <input type= "text" name = "password"/>
+            <input type="submit"/>
+        </form>
+        <a href="signup.html"> signup now </a>
+    </body>
+</html>
