@@ -1,7 +1,21 @@
-# To make this project run
-#   make
-# In case of adding new files pass it to g++
+CC=g++
+#=========================================================
+#add any new header files to DEPS macro and any new object
+#files to OBJ macro
 
-all:
-	g++ server_actions.cpp -o server
+DEPS = http_get_request_parser.h http_response_builder.h
 
+OBJ = http_get_request_parser.o http_response_builder.o \
+	  server_actions.o
+#=========================================================
+
+%.o: %.cpp $(DEPS)
+	$(CC) -c -o $@ $<
+
+all : server
+
+server : $(OBJ)
+	$(CC) -o $@ $^
+
+clean:
+	rm -rf *o *gch server
