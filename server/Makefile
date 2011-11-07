@@ -1,5 +1,5 @@
 # To make this project run
-#   make -f make_file
+#   make
 # In case of adding new files pass it to g++
 
 all:
