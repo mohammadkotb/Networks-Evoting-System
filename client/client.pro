@@ -4,15 +4,23 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui webkit
 
 TARGET = client
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    gui_renderer.cpp \
+    gui_builder.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    gui_renderer.h \
+    gui_builder.h
 
 FORMS    += mainwindow.ui
+
+
+
+
