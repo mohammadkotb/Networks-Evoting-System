@@ -13,13 +13,21 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     gui_renderer.cpp \
-    gui_builder.cpp
+    gui_builder.cpp \
+    http_get_request_builder.cpp \
+    http_response_parser.cpp
 
 HEADERS  += mainwindow.h \
     gui_renderer.h \
-    gui_builder.h
+    gui_builder.h \
+    http_get_request_builder.h \
+    http_response_parser.h
 
 FORMS    += mainwindow.ui
+
+
+
+
 
 
 
