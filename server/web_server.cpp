@@ -1,5 +1,7 @@
 #include <iostream>
 #include "server_socket.h"
+#include "user.h"
+
 using namespace std;
 
 // example function for processing tcp requests
@@ -44,6 +46,10 @@ void start_server(){
 }
 
 int main() {
-    start_server();
+    //start_server();
+    User user("Ahmed Kotb", "ahmedkotb","root");
+    cout << user.getName() << endl;
+    cout << user.getUserName() << endl;
+    cout << user.getPassword() << endl;
     return 0;
 }
