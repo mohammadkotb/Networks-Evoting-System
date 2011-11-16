@@ -1,6 +1,8 @@
 #include <iostream>
 #include "server_socket.h"
 #include "user.h"
+#include "http_get_request_parser.h"
+#include <map>
 
 using namespace std;
 
@@ -25,8 +27,36 @@ bool go_tcp(void * args){
 	return true;
 }
 
+bool handle_web_request(void * args){
+    //get arguments
+	void **ar = (void **) args;
+	ServerSocket *serverSocket = (ServerSocket *) ar[0];
+	int client_file_descriptor = *((int *) ar[1]);
+	char *buffer = (char *) ar[2];
+    //=================================================
+    cout << "===========================" << endl;
+	cout << "raw data : " << buffer << endl;
+    //TODO:: optimize this (copy the whole buffer into string)
+    string data(buffer);
+    try{
+        HttpGetRequestParser request(data);
+        cout << "Required file : " << request.getRequiredFileName() << endl;
+        map<string,string> *m = request.getParameters();
+        map<string,string>::iterator it = m->begin();
+        cout << "parameters : " << endl;
+        for (;it != m->end();it++)
+            cout << it->first << " = " << request.getParameter(it->first) << endl;
+    }catch(int e){
+        return false;
+    }
+    //=================================================
+    //close the connection after returning the required object
+	if(serverSocket->getConnectionType() == SOCK_STREAM) close(client_file_descriptor);
+    return true;
+}
+
 void start_server(){
-	ServerSocket serverSocket('T', 6060, 1024, 5, &go_tcp);
+	ServerSocket serverSocket('T', 6060, 1024, 5, &handle_web_request);
 
 	pthread_t thrd;
 	pthread_attr_t attr;
@@ -46,10 +76,6 @@ void start_server(){
 }
 
 int main() {
-    //start_server();
-    User user("Ahmed Kotb", "ahmedkotb","root");
-    cout << user.getName() << endl;
-    cout << user.getUserName() << endl;
-    cout << user.getPassword() << endl;
+    start_server();
     return 0;
 }

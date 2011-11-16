@@ -3,28 +3,30 @@
 
 #include <string>
 #include <map>
-using namespace std;
 
 class HttpGetRequestParser{
     private:
         //raw data
-        string data;
+        std::string data;
         //requested file path
-        string file_path;
+        std::string file_path;
         //parameters
-        map<string,string>* parameters;
+        std::map<std::string,std::string>* parameters;
     public:
         //constructor using raw data
-        HttpGetRequestParser(string & data);
+        HttpGetRequestParser(std::string & data);
 
         //destructor
         ~HttpGetRequestParser();
 
+        //returns the required file
+        std::string getRequiredFileName();
+
         //returns parameter value
-        string getParameter(string name);
+        std::string getParameter(std::string name);
 
         //return all parameters
-        map<string,string> * getParameters();
+        std::map<std::string,std::string> * getParameters();
 
 };
 

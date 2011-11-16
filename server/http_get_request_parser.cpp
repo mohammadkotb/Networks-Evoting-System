@@ -1,5 +1,7 @@
 #include "http_get_request_parser.h"
 
+using namespace std;
+
 //creates a new Http get request from the given string
 HttpGetRequestParser::HttpGetRequestParser(string & data){
     this->parameters = new map<string,string>();
@@ -11,12 +13,17 @@ HttpGetRequestParser::HttpGetRequestParser(string & data){
     if (parameter_start_index == string::npos){
         this->file_path = data.substr(4,data.length()-4);
     }else{
+        this->file_path = data.substr(4,parameter_start_index-4);
         //parse parameters
         size_t secondIndex = parameter_start_index;
         while (secondIndex != string::npos){
             size_t firstIndex = secondIndex + 1;
             secondIndex = data.find("&",firstIndex);
-            string parameter = data.substr(firstIndex,secondIndex-firstIndex);
+            string parameter;
+            if (secondIndex == string::npos)
+                parameter = data.substr(firstIndex,data.find(" ",firstIndex)-firstIndex);
+            else
+                parameter = data.substr(firstIndex,secondIndex-firstIndex);
             size_t eq_index = parameter.find("=");
             //if it is a valid parameter (on the format name = value)
             if (eq_index != string::npos){
@@ -27,6 +34,10 @@ HttpGetRequestParser::HttpGetRequestParser(string & data){
 
         }
     }
+}
+
+string HttpGetRequestParser::getRequiredFileName(){
+    return this->file_path;
 }
 
 string HttpGetRequestParser::getParameter(string name){
