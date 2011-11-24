@@ -11,7 +11,7 @@ HttpGetRequestParser::HttpGetRequestParser(string & data){
     size_t parameter_start_index = data.find("?");
     //no parameters
     if (parameter_start_index == string::npos){
-        this->file_path = data.substr(4,data.length()-4);
+        this->file_path = data.substr(4,data.find(" ",5)-4);
     }else{
         this->file_path = data.substr(4,parameter_start_index-4);
         //parse parameters
