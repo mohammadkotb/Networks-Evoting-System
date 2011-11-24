@@ -34,6 +34,11 @@ void GuiBuilder::buildFile(QString path){
     this->build(html);
 }
 
+void GuiBuilder::build(std::string html){
+    QString text = QString::fromStdString(html);
+    this->build(text);
+}
+
 void GuiBuilder::build(QString & html){
     //clean previous page
     renderEngine->clear();

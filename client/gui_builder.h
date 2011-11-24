@@ -14,6 +14,9 @@ public:
     //build the gui from the given html string
     void build(QString &);
 
+    //build the gui from the given html string
+    void build(std::string);
+
     //build the gui from the given html file path
     void buildFile(QString);
 

@@ -6,6 +6,10 @@
 #include <QDebug>
 #include "gui_renderer.h"
 #include "gui_builder.h"
+#include "client_socket.h"
+#include "http_get_request_builder.h"
+
+#define BUFFER_SIZE 2048
 
 namespace Ui {
     class MainWindow;
@@ -27,8 +31,17 @@ public slots:
     //the redirect method
     void submit(QObject *);
 
+    //called when the go button is pressed
+    //it reads the value in the urlLineEdit
+    //and creates a new request and send it
+    void go();
+
 private:
     Ui::MainWindow *ui;
+    char * buffer;
+    GuiRenderer * renderEngine;
+    QString currentUrl;
+
 };
 
 #endif // MAINWINDOW_H
