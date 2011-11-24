@@ -4,7 +4,6 @@
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::ifstream;
 
 bool ServerSocket::setupServer(){
 	// Create a new socket with the socket system call.
@@ -55,7 +54,7 @@ bool ServerSocket::init(char connection_type, int port_no, int buffer_size, int 
 		valid = false;
 	}
 
-	this->kBufferSize = buffer_size;
+	this->bufferSize = buffer_size;
 	if(buffer_size > maxBufferSize){
 		cerr << "Error! BufferSize is too large! Maximum buffer size = " << maxBufferSize << endl;
 		valid = false;
@@ -64,7 +63,7 @@ bool ServerSocket::init(char connection_type, int port_no, int buffer_size, int 
 		valid = false;
 	}
 
-	this->kQueueSize = queueSize;
+	this->queueSize = queueSize;
 	if(queueSize < 0 || queueSize > 100){
 		cerr << "Error! Queue Size must be in the range [0:" << maxQueueSize <<"]" << endl;
 		valid = false;
@@ -94,11 +93,11 @@ bool ServerSocket::isRunning(){
 }
 
 int ServerSocket::getBufferSize(){
-	return this->kBufferSize;
+	return this->bufferSize;
 }
 
 int ServerSocket::getQueueSize(){
-	return this->kQueueSize;
+	return this->queueSize;
 }
 
 int ServerSocket::getConnectionType(){
@@ -106,8 +105,8 @@ int ServerSocket::getConnectionType(){
 }
 
 bool ServerSocket::read_tcp(char buffer[], int client_file_descriptor){
-	memset(buffer, 0, kBufferSize);
-	int data_size = read(client_file_descriptor, buffer, kBufferSize - 1);
+	memset(buffer, 0, bufferSize);
+	int data_size = read(client_file_descriptor, buffer, bufferSize - 1);
 	if (data_size < 0) {
 		cerr << "Error reading from socket." << endl;
 		return false;
@@ -116,10 +115,37 @@ bool ServerSocket::read_tcp(char buffer[], int client_file_descriptor){
 	return true;
 }
 
+bool ServerSocket::writeToSocket(char buffer[], void *args){
+	bool success = true;
+
+	if(buffer == NULL || args == NULL){
+		cerr << "Null Argument Exception in writeToScoekt" << endl;
+		success = false;
+	}
+
+	void **ar = (void **) args;
+	int client_file_descriptor = *((int *) ar[1]);
+
+	if(this->connection_type == SOCK_STREAM){
+		int data_size = write(client_file_descriptor, buffer, strlen(buffer));
+		success &= (data_size >= 0);
+	} else if(this->connection_type == SOCK_DGRAM){
+		sockaddr_in *client_address = (sockaddr_in *) ar[3];
+		int data_size = sendto(client_file_descriptor, buffer, strlen(buffer), 0, (struct sockaddr *) client_address, sizeof(*client_address));
+		success &= (data_size >= 0);
+	}
+
+	if(!success){
+		cerr << "Error writing to socket" << endl;
+	}
+
+	return success;
+}
+
 void ServerSocket::handleTCPRequest(void *args){
 	void **ar = (void **) args;
 	int socket_new_file_descriptor = *((int *) ar[1]);
-	char buffer[this->kBufferSize]; //local variable for each thread, No syncronization needed
+	char buffer[this->bufferSize]; //local variable for each thread, No syncronization needed
 
 	// block wait till the client sends its message
 	if(!read_tcp(buffer, socket_new_file_descriptor)){
@@ -149,7 +175,7 @@ void ServerSocket::handleTCPRequest(void *args){
 // Sets the server for TCP connection.
 bool ServerSocket::handleTcpConnection() {
 	sockaddr_in client_address;
-	listen(socket_file_descriptor, kQueueSize);
+	listen(socket_file_descriptor, queueSize);
 	cerr << "Listening to port: " << port_num << endl;
 	socklen_t client_size = sizeof(client_address);
 	int socket_new_file_descriptor;
@@ -185,7 +211,7 @@ bool ServerSocket::handleTcpConnection() {
 void ServerSocket::handleUDPRequest(void *args){
 	void **ar = (void **) args;
 	char *globalBuffer = (char *) ar[2];
-	char localBuffer[this->kBufferSize];
+	char localBuffer[this->bufferSize];
 	strcpy(localBuffer, globalBuffer);
 	pthread_mutex_unlock(&buf_udp_mutex);
 
@@ -205,18 +231,18 @@ void ServerSocket::handleUDPRequest(void *args){
 bool ServerSocket::handleUDPConnection() {
 	sockaddr_in client_address;
 	socklen_t client_len = sizeof(sockaddr_in);
-	char data_buffer[kBufferSize];
+	char data_buffer[bufferSize];
 	int data_size;
 	cerr << "Waiting for UDP requests" << endl;
 
 	while (1) {
 		// Initialize data_buffer to zero.
 		pthread_mutex_lock(&buf_udp_mutex);
-		memset(data_buffer, 0, kBufferSize);
+		memset(data_buffer, 0, bufferSize);
 
 		// Reads kBufferSize - 1 bytes into the data_buffer.
 		// Updates the client_address with the senders address.
-		data_size = recvfrom(socket_file_descriptor, data_buffer, kBufferSize-1, 0, (sockaddr *) &client_address, &client_len);
+		data_size = recvfrom(socket_file_descriptor, data_buffer, bufferSize-1, 0, (sockaddr *) &client_address, &client_len);
 		if (data_size < 0) {
 			cerr << "Unable to receive data!" << endl;
 			return false;
@@ -272,8 +298,7 @@ void * ServerSocket::run(void * args){
 	return NULL;
 }
 
-// sample test
-/*
+
 // example function for processing tcp requests
 bool go_tcp(void * args){
 	cerr << "الحمد لله رب العالمين" << endl;
@@ -319,10 +344,28 @@ bool go_udp(void * args){
 	return true;
 }
 
+bool go(void *args){
+	cerr << "الحمد لله رب العالمين" << endl;
+	void **ar = (void **) args;
+	ServerSocket *serverSocket = (ServerSocket *) ar[0];
+	char *buffer = (char *) ar[2];
+	cerr << "Message received from client is: " << buffer << endl;
+	int first_num, second_num;
+	sscanf(buffer, "%d %d", &first_num, &second_num);
+	first_num += second_num;
+	char sum[serverSocket->getBufferSize()];
+	sprintf(sum, "%d", first_num);
+	return serverSocket->writeToSocket(sum, args);
+}
+
+/*
 // example main function like the one that should start the server
 int main(int argc, char** argv) {
 //	ServerSocket serverSocket('T', 6060, 1024, 5, &go_tcp);
-	ServerSocket serverSocket('U', 6060, 1024, 5, &go_udp);
+//	ServerSocket serverSocket('U', 6060, 1024, 5, &go_udp);
+
+//	ServerSocket serverSocket('T', 6060, 1024, 5, &go);
+	ServerSocket serverSocket('U', 6060, 1024, 5, &go);
 
 	pthread_t thrd;
 	pthread_attr_t attr;
@@ -342,4 +385,4 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
-*/
+//*/

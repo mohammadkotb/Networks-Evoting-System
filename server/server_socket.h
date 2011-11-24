@@ -20,15 +20,15 @@
 
 const int kSinZeroSize = 8; // sin_zero size
 const int maxBufferSize = 1<<20; // Maximum size of the data buffer.
+const int defaultBufferSize = 1024; // Default size of the data buffer.
 const int defaultQueueSize = 5; // Default Queue size
 const int maxQueueSize = 100; //Maximum Queue Size
-const int defaultBufferSize = 1024; // Default size of the data buffer.
 const int defaultPortNumber = 80; // Default port number
 
 class ServerSocket{
 	private:
-		int kQueueSize; // Queue size
-		int kBufferSize; // size of the data buffer.
+		int queueSize; // Queue size
+		int bufferSize; // size of the data buffer.
 		int port_num; // Server port number.
 		int connection_type; // Connection type. Either TCP or UDP.
 		int socket_file_descriptor; // used for storing the values returned by the socket system call and the accept system call.
@@ -43,7 +43,7 @@ class ServerSocket{
 		bool setupServer();
 
 		// reads message sent by clients in case of TCP
-		bool read_tcp(char buffer[], int client_file_descriptor);
+		bool read_tcp(char *, int client_file_descriptor);
 
 		// logic for handling a single TCP request
 		void handleTCPRequest(void *);
@@ -73,6 +73,9 @@ class ServerSocket{
 		int getBufferSize();
 		int getQueueSize();
 		int getConnectionType();
+
+		// writes to socket regardless of connection type (tcp/udp)
+		bool writeToSocket(char *, void *);
 
 		// two functions needed for creating a thread for each request received
 		void playThread_aux(void *);
