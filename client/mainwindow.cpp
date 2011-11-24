@@ -5,6 +5,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->mainVerticalLayout->setContentsMargins(10,10,10,10);
+    this->setCentralWidget(ui->verticalLayoutWidget);
     //Example of gui classes use
 
     //the second parameter in the constructor of GuiRenderer
