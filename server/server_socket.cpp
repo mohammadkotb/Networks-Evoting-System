@@ -299,6 +299,7 @@ void * ServerSocket::run(void * args){
 }
 
 
+/*
 // example function for processing tcp requests
 bool go_tcp(void * args){
 	cerr << "الحمد لله رب العالمين" << endl;
@@ -358,7 +359,6 @@ bool go(void *args){
 	return serverSocket->writeToSocket(sum, args);
 }
 
-/*
 // example main function like the one that should start the server
 int main(int argc, char** argv) {
 //	ServerSocket serverSocket('T', 6060, 1024, 5, &go_tcp);
@@ -385,4 +385,4 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
-//*/
+*/
