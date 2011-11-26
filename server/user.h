@@ -5,18 +5,20 @@
 
 class User{
     private:
-        std::string name;
+        std::string type;
         std::string username;
         std::string password;
     public:
         //constructor
-        User(std::string name,std::string username,std::string password);
+        User(std::string type,std::string username,std::string password);
+        //default costructor
+        User();
         //getters
-        std::string getName();
+        std::string getType();
         std::string getUserName();
         std::string getPassword();
         //setters
-        void setName(std::string name);
+        void setType(std::string type);
         void setUserName(std::string username);
         void setPassword(std::string password);
         //destructor

@@ -7,7 +7,7 @@ using namespace std;
 
 enum ResponseCode{
     OK = 200,
-    NOT_FOUND = 404,
+    NOT_FOUND = 404
 };
 
 class HttpResponseBuilder{
@@ -21,6 +21,9 @@ class HttpResponseBuilder{
 
         //returns the repsponse status code
         int getResponseCode();
+
+        //sets the response code
+        void setResponseCode(ResponseCode response_code);
 
         //set the body of the response
         void setBody(string body);

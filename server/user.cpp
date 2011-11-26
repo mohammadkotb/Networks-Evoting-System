@@ -2,14 +2,18 @@
 #include <string>
 using namespace std;
 
-User::User(string name,string username,string password){
-    this->name = name;
+User::User(){
+    User("", "", "");
+}
+
+User::User(string type,string username,string password){
+    this->type = type;
     this->username = username;
     this->password = password;
 }
 
-void User::setName(string name){
-    this->name = name;
+void User::setType(string type){
+    this->type = type;
 }
 
 void User::setUserName(string username){
@@ -20,8 +24,8 @@ void User::setPassword(string password){
     this->password = password;
 }
 
-string User::getName(){
-    return this->name;
+string User::getType(){
+    return this->type;
 }
 
 string User::getPassword(){

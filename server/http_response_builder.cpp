@@ -4,6 +4,10 @@ HttpResponseBuilder::HttpResponseBuilder(enum ResponseCode code){
     this->responseCode = code;
 }
 
+void HttpResponseBuilder::setResponseCode(ResponseCode response_code) {
+    this->responseCode = response_code;
+}
+
 void HttpResponseBuilder::setBody(string body){
     this->body = body;
 }

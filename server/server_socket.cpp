@@ -119,7 +119,7 @@ bool ServerSocket::writeToSocket(char buffer[], void *args){
 	bool success = true;
 
 	if(buffer == NULL || args == NULL){
-		cerr << "Null Argument Exception in writeToScoekt" << endl;
+                cerr << "Null Argument Exception in writeToSocket" << endl;
 		success = false;
 	}
 

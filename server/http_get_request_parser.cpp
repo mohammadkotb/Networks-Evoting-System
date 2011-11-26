@@ -3,7 +3,7 @@
 using namespace std;
 
 //creates a new Http get request from the given string
-HttpGetRequestParser::HttpGetRequestParser(string & data){
+HttpGetRequestParser::HttpGetRequestParser(const string & data){
     this->parameters = new map<string,string>();
     //unsupported header
     if (data.substr(0,3) != "GET")

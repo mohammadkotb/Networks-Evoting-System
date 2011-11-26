@@ -14,7 +14,7 @@ class HttpGetRequestParser{
         std::map<std::string,std::string>* parameters;
     public:
         //constructor using raw data
-        HttpGetRequestParser(std::string & data);
+        HttpGetRequestParser(const std::string & data);
 
         //destructor
         ~HttpGetRequestParser();
