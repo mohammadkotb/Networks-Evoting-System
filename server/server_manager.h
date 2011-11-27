@@ -18,10 +18,18 @@ public:
     // sets the output parameter "response" with the serialized server response.
     void handle_request(string* response, const string& request_data);
 
+   // constructor
+   ServerManager();
+
+   // destructor
+   virtual ~ServerManager();
 
 private:
     // Contains the data for all the system users. Maps each username to a user object.
     map<string, User> users_map_;
+
+    // mutex for users_map_
+    pthread_mutex_t users_map_mutex;
 
     // Similar to prepare_response_from_file. However, the response code is set to the input parameter: "code".
     void prepare_response_with_code(string *prepared_response, const string& file_path, ResponseCode code);
