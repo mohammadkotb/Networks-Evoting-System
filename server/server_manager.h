@@ -10,11 +10,19 @@
 using std::string;
 using std::map;
 
+// Enumerated types that indicates the result of the can_add_user function.
+enum VALIDATION_CODE{
+    VALID = 0,
+    USED_USERNAME = 1,
+    MISSING_FIELD = 2,
+    WRONG_TYPE = 3
+};
+
 class ServerManager {
 
 public:
 
-    // handle the client request. The function accepts the request_data as input and
+    // Handles the client request. The function accepts the request_data as input and
     // sets the output parameter "response" with the serialized server response.
     void handle_request(string* response, const string& request_data);
 
@@ -38,9 +46,8 @@ private:
     // for the prepared_response. The response code is set by default to OK.
     void prepare_response_from_file(string *prepared_response, const string& file_path);
 
-    // Adds a new user to the system. Updates the users_map_ accordingly. Returns true when
-    // the user is added successfully. False otherwise.
-    bool can_add_user(const string& request_data);
+    // Checks whether or not the user can be added to the system. udates the users_map_ accordingly.
+    VALIDATION_CODE can_add_user(const string& request_data);
 
     // Checks whether the user data is valid or not.
     bool valid_user(const string& request_data);
