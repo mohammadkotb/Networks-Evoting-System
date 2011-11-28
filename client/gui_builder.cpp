@@ -12,6 +12,7 @@
 #define HREF_ATTRIB "href"
 
 #define TEXT_ATTRIB_VAL "text"
+#define PASSWORD_ATTRIB_VAL "password"
 #define SUBMIT_ATTRIB_VAL "submit"
 
 GuiBuilder::GuiBuilder(GuiRenderer * engine){
@@ -72,6 +73,9 @@ void GuiBuilder::build(QString & html){
                 if (e.tagName() == INPUT_TAG){
                     if (e.attribute(TYPE_ATTRIB) == TEXT_ATTRIB_VAL){
                         renderEngine->drawTextBox(formName + "|" +e.attribute(NAME_ATTRIB));
+                        parametersList->append(formName + "|" + e.attribute(NAME_ATTRIB));
+                    }else if (e.attribute(TYPE_ATTRIB) == PASSWORD_ATTRIB_VAL){
+                        renderEngine->drawPasswordTextBox(formName + "|" +e.attribute(NAME_ATTRIB));
                         parametersList->append(formName + "|" + e.attribute(NAME_ATTRIB));
                     }else if (e.attribute(TYPE_ATTRIB) == SUBMIT_ATTRIB_VAL){
                         submitElement = e;

@@ -42,6 +42,13 @@ void GuiRenderer::drawTextBox(QString name){
     formLayout->addWidget(textbox);
 }
 
+void GuiRenderer::drawPasswordTextBox(QString name){
+    QLineEdit * textbox = new QLineEdit(mainwidget);
+    textbox->setObjectName(name);
+    formLayout->addWidget(textbox);
+    textbox->setEchoMode(QLineEdit::Password);
+}
+
 void GuiRenderer::drawText(QString text){
     QLabel * lbl = new QLabel(mainwidget);
     formLayout->addWidget(lbl);

@@ -40,6 +40,11 @@ public:
      */
     void drawTextBox(QString name);
 
+    /* draws an input password text box
+     * input:
+     * QString name : the name of the text box object
+     */
+    void drawPasswordTextBox(QString name);
 
     /* draws a plain text
      * input:
