@@ -10,27 +10,6 @@ using namespace std;
 
 ServerManager server_manager;
 
-// example function for processing tcp requests
-bool go_tcp(void * args){
-	void **ar = (void **) args;
-	ServerSocket *serverSocket = (ServerSocket *) ar[0];
-	int client_file_descriptor = *((int *) ar[1]);
-	char *buffer = (char *) ar[2];
-	cerr << "Message received from client is: " << buffer << endl;
-	int first_num, second_num;
-	sscanf(buffer, "%d %d", &first_num, &second_num);
-	first_num += second_num;
-	char sum[serverSocket->getBufferSize()];
-	sprintf(sum, "%d", first_num);
-	int data_size = write(client_file_descriptor, sum, strlen(sum));
-	if (data_size < 0) {
-		cerr << "Error writing to socket!";
-		return false;
-	}
-	if(serverSocket->getConnectionType() == SOCK_STREAM) close(client_file_descriptor);
-	return true;
-}
-
 bool handle_web_request(void * args){
     //get arguments
 	void **ar = (void **) args;
