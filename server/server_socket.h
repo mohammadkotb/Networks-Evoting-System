@@ -74,8 +74,12 @@ class ServerSocket{
 		int getQueueSize();
 		int getConnectionType();
 
-		// writes to socket regardless of connection type (tcp/udp)
+		//@depricated: this function only works for writing strings, so it has a more generic overload
+		// writes STRINGS ONLY to socket regardless of connection type (tcp/udp)
 		bool writeToSocket(char *, void *);
+
+		// writes to socket regardless of connection type (tcp/udp)
+		bool writeToSocket(char *, int, void *);
 
 		// two functions needed for creating a thread for each request received
 		void playThread_aux(void *);

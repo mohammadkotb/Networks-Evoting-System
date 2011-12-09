@@ -116,10 +116,14 @@ bool ServerSocket::read_tcp(char buffer[], int client_file_descriptor){
 }
 
 bool ServerSocket::writeToSocket(char buffer[], void *args){
+	return writeToSocket(buffer, strlen(buffer), args);
+}
+
+bool ServerSocket::writeToSocket(char buffer[], int size, void *args){
 	bool success = true;
 
 	if(buffer == NULL || args == NULL){
-                cerr << "Null Argument Exception in writeToSocket" << endl;
+		cerr << "Null Argument Exception in writeToScoekt" << endl;
 		success = false;
 	}
 
@@ -127,11 +131,11 @@ bool ServerSocket::writeToSocket(char buffer[], void *args){
 	int client_file_descriptor = *((int *) ar[1]);
 
 	if(this->connection_type == SOCK_STREAM){
-		int data_size = write(client_file_descriptor, buffer, strlen(buffer));
+		int data_size = write(client_file_descriptor, buffer, size);
 		success &= (data_size >= 0);
 	} else if(this->connection_type == SOCK_DGRAM){
 		sockaddr_in *client_address = (sockaddr_in *) ar[3];
-		int data_size = sendto(client_file_descriptor, buffer, strlen(buffer), 0, (struct sockaddr *) client_address, sizeof(*client_address));
+		int data_size = sendto(client_file_descriptor, buffer, size, 0, (struct sockaddr *) client_address, sizeof(*client_address));
 		success &= (data_size >= 0);
 	}
 
@@ -299,7 +303,6 @@ void * ServerSocket::run(void * args){
 }
 
 
-/*
 // example function for processing tcp requests
 bool go_tcp(void * args){
 	cerr << "الحمد لله رب العالمين" << endl;
@@ -359,6 +362,7 @@ bool go(void *args){
 	return serverSocket->writeToSocket(sum, args);
 }
 
+/*
 // example main function like the one that should start the server
 int main(int argc, char** argv) {
 //	ServerSocket serverSocket('T', 6060, 1024, 5, &go_tcp);
@@ -385,4 +389,4 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
-*/
+//*/

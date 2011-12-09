@@ -11,29 +11,30 @@
 #include <unistd.h>
 #include <netdb.h>
 
+const int defaultPortNumber = 80;
+char defaultServerName[32] = "localhost";
 
 class ClientSocket{
-private:
-    int server_port_num; // Server port number.
-    int connection_type; // Connection type. Either TCP or UDP.
-    char server_name[32];
-    int socket_file_descriptor;
-    struct sockaddr_in server_address;
-    struct sockaddr_in sender_address;
-    struct hostent *server;
-    int client_id;
+	private:
+		int server_port_num; // Server port number.
+		int connection_type; // Connection type. Either TCP or UDP.
+		char server_name[32];
+		int socket_file_descriptor;
+		struct sockaddr_in server_address;
+		struct sockaddr_in sender_address;
+		struct hostent *server;
+		int client_id;
 
-    bool init(char, int, char *);
+		bool init(char, int, char *);
 
+	public:
+		ClientSocket(char connection_type, int server_port_number);
+		ClientSocket(char connection_type, int server_port_number, char *server_name);
+		ClientSocket(char connection_type);
+		virtual ~ClientSocket();
 
-public:
-    ClientSocket(char connection_type, int server_port_number);
-    ClientSocket(char connection_type, int server_port_number, char *server_name);
-    ClientSocket(char connection_type);
-    virtual ~ClientSocket();
-
-    bool readFromSocket(char *, int);
-    bool writeToSocket(char *);
+		int readFromSocket(char *, int);
+		int writeToSocket(char *);
 };
 
 #endif /* CLIENT_SOCKET_H_ */

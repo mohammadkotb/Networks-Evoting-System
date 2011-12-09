@@ -4,9 +4,6 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-const int defaultPortNumber = 80;
-char defaultServerName[32] = "localhost";
-
 bool ClientSocket::init(char connection_type, int server_port_number, char *server_name){
 
     this->server_port_num = server_port_number;
@@ -77,27 +74,27 @@ ClientSocket::~ClientSocket(){
         close(socket_file_descriptor);
 }
 
-bool ClientSocket::readFromSocket(char buf[], int buffer_size){
+int ClientSocket::readFromSocket(char buf[], int buffer_size){
     int ret=-1;
     memset(buf, 0, buffer_size);
     if(connection_type == SOCK_STREAM){
-        ret = read(socket_file_descriptor, buf, buffer_size-1);
+        ret = read(socket_file_descriptor, buf, buffer_size);
     } else if(connection_type == SOCK_DGRAM){
         unsigned int sz = sizeof(sender_address);
-        ret = recvfrom(socket_file_descriptor, buf, buffer_size-1, 0, (struct sockaddr *)&sender_address, &sz);
+        ret = recvfrom(socket_file_descriptor, buf, buffer_size, 0, (struct sockaddr *)&sender_address, &sz);
     }
 
-    return (ret>=0);
+    return ret;
 }
 
-bool ClientSocket::writeToSocket(char *msg){
+int ClientSocket::writeToSocket(char *msg){
     int ret=-1;
     if(connection_type == SOCK_STREAM){
         ret = write(socket_file_descriptor, msg, strlen(msg));
     } else if(connection_type == SOCK_DGRAM){
         ret = sendto(socket_file_descriptor, msg, strlen(msg), 0, (const struct sockaddr *)&server_address,sizeof(server_address));
     }
-    return (ret>=0);
+    return ret;
 }
 
 // client main
@@ -123,3 +120,33 @@ int main(){
         return 0;
 }
 //*/
+/*
+int main(){
+	int a, b;
+	ClientSocket clientSocket('T', 6060);
+
+	char buf[256] = "send file";
+	char str[256];
+	sprintf(str, "sending message: %s", buf);
+	cerr << str << endl;
+	clientSocket.writeToSocket(buf);
+
+
+	FILE *fout = fopen("img_copy.jpg", "w");
+
+	char packet[256];
+	memset(packet,0,256);
+	int cnt=0;
+	while(clientSocket.readFromSocket(packet, 256)){
+		cerr << ++cnt << endl;
+		fwrite(packet, 1, ret, fout);
+		memset(packet,0,256);
+	}
+
+	fclose(fout);
+
+	cerr << "Done, thank God :)" << endl;
+
+
+	return 0;
+} //*/
