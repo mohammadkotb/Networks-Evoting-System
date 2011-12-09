@@ -11,22 +11,104 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     //setup ui
     ui->setupUi(this);
-    ui->mainVerticalLayout->setContentsMargins(10,10,10,10);
+    ui->mainLayout->setContentsMargins(10,10,10,10);
     this->setCentralWidget(ui->verticalLayoutWidget);
     QObject::connect(ui->goButton,SIGNAL(clicked()),SLOT(go()));
     QObject::connect(ui->urlLineEdit,SIGNAL(returnPressed()),SLOT(go()));
+    connect(ui->remoteTreeWidget,SIGNAL(itemClicked(QTreeWidgetItem*,int)),
+            SLOT(fetchFolder(QTreeWidgetItem*,int)));
+    connect(ui->downloadButton,SIGNAL(clicked()),SLOT(downloadFile()));
+    connect(ui->uploadButton,SIGNAL(clicked()),SLOT(uploadFile()));
+
+
+    //setup local ftp tree
+    QFileSystemModel *model = new QFileSystemModel();
+    model->setRootPath(QDir::currentPath());
+    ui->localTreeView->setModel(model);
+
+    //dummy data
+    QTreeWidgetItem* it = new QTreeWidgetItem();
+    it->setText(0,"test");
+    it->setText(1,"test");
+    it->setData(0,Qt::UserRole,QVariant("data/"));
+    ui->remoteTreeWidget->addTopLevelItem(it);
 
     renderEngine = new GuiRenderer(ui->canvas->widget(),this);
-
-    //Example of gui classes use
-    //the second parameter in the constructor of GuiRenderer
-    //implies that this object must provide the 2 functions
-    //redirect and submit as public slots
-    //GuiRenderer *renderEngine = new GuiRenderer(ui->canvas->widget(),this);
-    //GuiBuilder builder(renderEngine);
-    //builder.buildFile("../htdocs/test1");
-    //delete renderEngine
 }
+
+void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
+    qDebug() << "fetching ..";
+    qDebug() << item->data(0,Qt::UserRole).toString();
+}
+
+void MainWindow::downloadFile(){
+    //get the remote file name
+    QTreeWidgetItem * item = ui->remoteTreeWidget->currentItem();
+    if (item == 0){
+        QMessageBox::warning(this, tr("download Error"),
+           tr("please select a remote file to download"));
+        return;
+    }
+    QString remoteFile = item->data(0,Qt::UserRole).toString();
+    qDebug() << remoteFile;
+    if (remoteFile[remoteFile.length()-1] == '/'){
+        QMessageBox::warning(this, tr("download Error"),
+           tr("please select a remote file not a folder"));
+        return;
+    }
+    //get the local folder path
+    QFileSystemModel * model =(QFileSystemModel*) ui->localTreeView->model();
+    QModelIndexList indexes = ui->localTreeView->selectionModel()->selectedRows();
+    if (indexes.size() == 0){
+        QMessageBox::warning(this, tr("download Error"),
+           tr("please select a destination folder"));
+        return;
+    }
+    QModelIndex index = indexes.at(0);
+    QFileInfo info = model->fileInfo(index);
+    if (info.isFile()){
+        QMessageBox::warning(this, tr("download Error"),
+           tr("please choose a destination folder not file"));
+        return;
+    }
+    qDebug() << info.absoluteFilePath();
+    //downloading...
+}
+
+void MainWindow::uploadFile(){
+    //get local selected file
+    QFileSystemModel * model =(QFileSystemModel*) ui->localTreeView->model();
+    QModelIndexList indexes = ui->localTreeView->selectionModel()->selectedRows();
+    if (indexes.size() == 0){
+        QMessageBox::warning(this, tr("upload Error"),
+           tr("please select a source file"));
+        return;
+    }
+    QModelIndex index = indexes.at(0);
+    QFileInfo info = model->fileInfo(index);
+    if (info.isDir()){
+        QMessageBox::warning(this, tr("upload Error"),
+           tr("please choose a source file not folder"));
+        return;
+    }
+    qDebug() << info.absoluteFilePath();
+    //get remote selected folder
+    QTreeWidgetItem * item = ui->remoteTreeWidget->currentItem();
+    if (item == 0){
+        QMessageBox::warning(this, tr("upload Error"),
+           tr("please select a remote folder to upload to"));
+        return;
+    }
+    QString remoteFolder = item->data(0,Qt::UserRole).toString();
+    qDebug() << remoteFolder;
+    if (remoteFolder[remoteFolder.length()-1] != '/'){
+        QMessageBox::warning(this, tr("upload Error"),
+           tr("please select a remote folder not a file"));
+        return;
+    }
+    //do the uploading
+}
+
 
 void MainWindow::redirect(QString str){
     int index = currentUrl.lastIndexOf("/");

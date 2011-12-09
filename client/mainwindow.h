@@ -36,6 +36,15 @@ public slots:
     //and creates a new request and send it
     void go();
 
+    //called when user clicks on an item in the remote tree
+    void fetchFolder(QTreeWidgetItem *,int c);
+
+    //downloads the selected file from server
+    void downloadFile();
+
+    //uploads the selected file to server
+    void uploadFile();
+
 private:
     Ui::MainWindow *ui;
     char * buffer;
