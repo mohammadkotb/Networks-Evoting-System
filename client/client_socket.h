@@ -11,8 +11,6 @@
 #include <unistd.h>
 #include <netdb.h>
 
-const int defaultPortNumber = 80;
-char defaultServerName[32] = "localhost";
 
 class ClientSocket{
 	private:

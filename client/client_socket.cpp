@@ -4,6 +4,9 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+const int defaultPortNumber = 80;
+char defaultServerName[32] = "localhost";
+
 bool ClientSocket::init(char connection_type, int server_port_number, char *server_name){
 
     this->server_port_num = server_port_number;

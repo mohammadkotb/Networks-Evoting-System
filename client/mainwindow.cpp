@@ -130,8 +130,7 @@ void MainWindow::go(){
     }
 
     qDebug() << "requesting data ...";
-
-    if (!socket->writeToSocket((char*)request.getSerialization().c_str())){
+    if (socket->writeToSocket((char*)request.getSerialization().c_str()) < 0){
         qDebug() << "couldn't send data";
         builder.build("<p>couldn't send requst to server</p>");
         ui->canvas->widget()->setCursor(Qt::ArrowCursor);
@@ -140,7 +139,13 @@ void MainWindow::go(){
     }
 
     qDebug() << "waiting for response ...";
-    socket->readFromSocket(buffer,BUFFER_SIZE);
+    if (socket->readFromSocket(buffer,BUFFER_SIZE) < 0){
+        qDebug() << "couldn't get response ...";
+        builder.build("<p>couldn't send requst to server</p>");
+        ui->canvas->widget()->setCursor(Qt::ArrowCursor);
+        delete socket;
+        return;
+    }
 
     //todo : optimize this (overhead of converting from char * to string to qstring)
     QString response = QString::fromStdString(string(buffer));
