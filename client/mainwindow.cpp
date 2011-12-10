@@ -21,15 +21,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     connect(ui->uploadButton,SIGNAL(clicked()),SLOT(uploadFile()));
 
 
-    //setup local ftp tree
+    //setup local and remote ftp trees
     QFileSystemModel *model = new QFileSystemModel();
     model->setRootPath(QDir::currentPath());
     ui->localTreeView->setModel(model);
+    ui->remoteTreeWidget->setColumnCount(2);
+    QStringList labels; labels.append("Name");labels.append("Size");
+    ui->remoteTreeWidget->setHeaderLabels(labels);
 
     //dummy data
     QTreeWidgetItem* it = new QTreeWidgetItem();
-    it->setText(0,"test");
-    it->setText(1,"test");
+    it->setText(0,"MyDir");
     it->setData(0,Qt::UserRole,QVariant("data/"));
     ui->remoteTreeWidget->addTopLevelItem(it);
 
@@ -37,8 +39,48 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 }
 
 void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
-    qDebug() << "fetching ..";
-    qDebug() << item->data(0,Qt::UserRole).toString();
+    QString itemName = item->data(0,Qt::UserRole).toString();
+    if (itemName[itemName.length()-1] != '/'){
+        return;
+    }
+    qDebug() << "fetching .. " << itemName;
+    //request file list
+    //...
+    //parse the outcome
+    //...
+    //display the outcome
+    vector<FtpFile*> files;
+    //dummy example
+    for(int i=0;i<3;i++){
+        FtpFile *f = new FtpFile();
+        f->set_size(i*20 + 5);
+        if (i==1){
+            f->set_name("Dir");
+            f->set_type(DIR_T);
+        }else{
+            f->set_name("File");
+            f->set_type(FILE_T);
+        }
+        files.push_back(f);
+    }
+    //displaying files and folders
+    //first files
+    for(unsigned int i=0;i<files.size();i++){
+        FtpFile *f = files[i];
+        QTreeWidgetItem* it = new QTreeWidgetItem();
+        string name;f->get_name(&name);
+        QString qname = QString::fromStdString(name);
+        it->setText(0,qname);
+        it->setText(1,QString::number(f->get_size()));
+        if (f->get_type() == DIR_T){
+            it->setData(0,Qt::UserRole,QVariant(itemName + qname + "/"));
+            it->setIcon(0,QIcon("../imgs/dir.png"));
+        }else if (f->get_type() == FILE_T){
+            it->setData(0,Qt::UserRole,QVariant(itemName + qname));
+            it->setIcon(0,QIcon("../imgs/file.png"));
+        }
+        item->addChild(it);
+    }
 }
 
 void MainWindow::downloadFile(){

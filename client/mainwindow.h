@@ -8,6 +8,7 @@
 #include "gui_builder.h"
 #include "client_socket.h"
 #include "http_get_request_builder.h"
+#include "ftp_file.h"
 
 #define BUFFER_SIZE 2048
 

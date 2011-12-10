@@ -17,10 +17,14 @@ SOURCES += main.cpp\
     http_get_request_builder.cpp \
     http_response_parser.cpp \
     client_socket.cpp \
+<<<<<<< HEAD
     ftp_file.cpp \
     ftp_file_parser.cpp \
     ftp_list_parser.cpp \
     test_main.cpp
+=======
+    ftp_file.cpp
+>>>>>>> origin/master
 
 HEADERS  += mainwindow.h \
     gui_renderer.h \
@@ -28,9 +32,13 @@ HEADERS  += mainwindow.h \
     http_get_request_builder.h \
     http_response_parser.h \
     client_socket.h \
+<<<<<<< HEAD
     ftp_list_parser.h \
     ftp_file.h \
     ftp_file_parser.h
+=======
+    ftp_file.h
+>>>>>>> origin/master
 
 FORMS    += mainwindow.ui
 
@@ -45,6 +53,7 @@ FORMS    += mainwindow.ui
 
 
 
+<<<<<<< HEAD
 
 
 
@@ -54,3 +63,5 @@ FORMS    += mainwindow.ui
 
 
 
+=======
+>>>>>>> origin/master
