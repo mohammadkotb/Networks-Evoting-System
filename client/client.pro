@@ -16,16 +16,20 @@ SOURCES += main.cpp\
     gui_builder.cpp \
     http_get_request_builder.cpp \
     http_response_parser.cpp \
-    client_socket.cpp
+    client_socket.cpp \
+    ftp_file.cpp
 
 HEADERS  += mainwindow.h \
     gui_renderer.h \
     gui_builder.h \
     http_get_request_builder.h \
     http_response_parser.h \
-    client_socket.h
+    client_socket.h \
+    ftp_file.h
 
 FORMS    += mainwindow.ui
+
+
 
 
 
