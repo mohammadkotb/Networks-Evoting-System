@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     ui->setupUi(this);
     ui->mainLayout->setContentsMargins(10,10,10,10);
     this->setCentralWidget(ui->verticalLayoutWidget);
+    ui->passwordLineEdit->setEchoMode(QLineEdit::Password);
     QObject::connect(ui->goButton,SIGNAL(clicked()),SLOT(go()));
     QObject::connect(ui->urlLineEdit,SIGNAL(returnPressed()),SLOT(go()));
     connect(ui->remoteTreeWidget,SIGNAL(itemClicked(QTreeWidgetItem*,int)),
@@ -153,12 +154,25 @@ void MainWindow::uploadFile(){
 
 
 void MainWindow::redirect(QString str){
-    int index = currentUrl.lastIndexOf("/");
-    QString server = currentUrl.mid(0,index);
-    qDebug() << "Redirecting to " << str;
-    currentUrl = server + "/" + str;
-    ui->urlLineEdit->setText(currentUrl);
-    go();
+    if (str.startsWith("ftp://")){
+        //an ftp link
+        int cindex = str.indexOf(":",6);
+        int atindex = str.indexOf("@");
+        QString username = str.mid(6,cindex-6);
+        QString password = str.mid(cindex+1,atindex-cindex-1);
+        QString host = str.mid(atindex+1);
+        ui->usernameLineEdit->setText(username);
+        ui->passwordLineEdit->setText(password);
+        ui->hostLineEdit->setText(host);
+        ui->tabWidget->setCurrentIndex(1);
+    }else{
+        int index = currentUrl.lastIndexOf("/");
+        QString server = currentUrl.mid(0,index);
+        qDebug() << "Redirecting to " << str;
+        currentUrl = server + "/" + str;
+        ui->urlLineEdit->setText(currentUrl);
+        go();
+    }
 }
 
 void MainWindow::submit(QObject* obj){

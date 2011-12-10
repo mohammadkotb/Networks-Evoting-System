@@ -10,6 +10,7 @@ void GuiRenderer::drawLink(QString name,QString label){
     QPushButton * q = new QPushButton(mainwidget);
     q->setText(label);
     formLayout->addWidget(q);
+    q->setToolTip(name);
 
     //TODO: when does signal mapper get deleted !!!!
     QSignalMapper* signalMapper = new QSignalMapper();
