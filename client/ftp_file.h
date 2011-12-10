@@ -26,6 +26,21 @@ public:
     // Sets the number of hard links.
     void set_num_hard_links(int num_hard_links);
 
+    // Sets the file symbolic link.
+    void set_link(const string& link);
+
+    // Sets the file raw listing.
+    void set_raw_listing(const string& raw_listing);
+
+    // Sets the file creation day.
+    void set_day(const string& day);
+
+    // Sets the file creation time.
+    void set_time(const string& time);
+
+    // Sets the file type.
+    void set_type(int type);
+
 private:
 
     // Name of the file.
@@ -49,8 +64,11 @@ private:
     // original FTP server raw listing from which the FtpFile was created.
     string raw_listing;
 
-    // File's timestamp
-    long long int timestamp;
+    // File's timestamp day.
+    string day;
+
+    // File's timestamp hours and minutes.
+    string time;
 
     // File type: symbolic link, directory or file.
     int type;
