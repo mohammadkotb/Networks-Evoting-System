@@ -46,10 +46,35 @@ public:
     // for the FTP RMD command.
     void rmd_command(string* command, const string& remote_directory);
 
-    // connect (user name)
-    // upload file
-    // download file
-    // bye
+    // QUIT Syntax: QUIT
+
+    // Updates the output parameter "command" with the properly formatted syntax
+    // for the FTP QUIT command.
+    void bye_command(string* command);
+
+    // RETR Syntax: RETR remote-filename
+
+    // Updates the output parameter "command" with the properly formatted syntax
+    // for the FTP RETR command.
+    void download_file(string* command, const string& remote_file);
+
+    //Syntax: STOR remote-filename
+    // Begins transmission of a file to the remote site. Must be preceded by
+    // either a PORT command or a PASV command so the server knows where to accept data from.
+
+    // Updates the output parameter "command" with the properly formatted syntax
+    // for the FTP STOR command.
+    void upload_file(string* command, const string& remote_file);
+
+
+    //PORT Syntax: PORT a1,a2,a3,a4,p1,p2
+    // Specifies the host and port to which the server should connect for the
+    // next file transfer. This is interpreted as IP address a1.a2.a3.a4, port p1*256+p2.
+
+    // Updates the output parameter "command" with the properly formatted syntax
+    // for the FTP PORT command.
+    void connect_command(string* command, const string& a1, const string& a2,
+        const string& a3, const string& a4, const string& p1, const string& p2);
 };
 
 #endif // FTP_COMMAND_BUILDER_H
