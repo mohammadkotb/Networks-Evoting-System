@@ -56,7 +56,7 @@ public:
 
     // Updates the output parameter "command" with the properly formatted syntax
     // for the FTP RETR command.
-    void download_file(string* command, const string& remote_file);
+    void download_command(string* command, const string& remote_file);
 
     //Syntax: STOR remote-filename
     // Begins transmission of a file to the remote site. Must be preceded by
@@ -64,7 +64,7 @@ public:
 
     // Updates the output parameter "command" with the properly formatted syntax
     // for the FTP STOR command.
-    void upload_file(string* command, const string& remote_file);
+    void upload_command(string* command, const string& remote_file);
 
 
     //PORT Syntax: PORT a1,a2,a3,a4,p1,p2
