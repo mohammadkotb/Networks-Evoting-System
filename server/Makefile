@@ -5,11 +5,12 @@ CFLAGS= -pthread
 #files to OBJ macro
 
 DEPS = http_get_request_parser.h http_response_builder.h \
-	   server_socket.h user.h client_socket.h server_manager.h
+	   server_socket.h user.h client_socket.h server_manager.h \
+	   ftp_server.h
 
 OBJ = http_get_request_parser.o http_response_builder.o \
 	  server_actions.o server.o server_socket.o user.o \
-	  server_manager.o
+	  server_manager.o ftp_server.o
 #=========================================================
 
 %.o: %.cpp $(DEPS)
