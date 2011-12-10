@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <netdb.h>
 
-
 class ClientSocket{
 	private:
 		int server_port_num; // Server port number.
