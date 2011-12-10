@@ -40,11 +40,15 @@ private:
     pthread_mutex_t users_map_mutex;
 
     // Similar to prepare_response_from_file. However, the response code is set to the input parameter: "code".
-    void prepare_response_with_code(string *prepared_response, const string& file_path, ResponseCode code);
+    // all occurrence of parameters map keys in the string loaded will be
+    // replaced with the corresponding values
+    void prepare_response_with_code(string *prepared_response, const string& file_path, ResponseCode code, map<string,string>&);
 
     // Reads a file from "file_path" and serializes its content as a string. The string will be used as the body
     // for the prepared_response. The response code is set by default to OK.
-    void prepare_response_from_file(string *prepared_response, const string& file_path);
+    // all occurrence of parameters map keys in the string loaded will be
+    // replaced with the corresponding values
+    void prepare_response_from_file(string *prepared_response, const string& file_path,map<string,string>&);
 
     // Checks whether or not the user can be added to the system. udates the users_map_ accordingly.
     VALIDATION_CODE can_add_user(const string& request_data);
