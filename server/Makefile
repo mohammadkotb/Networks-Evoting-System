@@ -8,17 +8,17 @@ DEPS = http_get_request_parser.h http_response_builder.h \
 	   server_socket.h user.h client_socket.h server_manager.h
 
 OBJ = http_get_request_parser.o http_response_builder.o \
-	  server_actions.o web_server.o server_socket.o \
-	  user.o server_manager.o
+	  server_actions.o server.o server_socket.o user.o \
+	  server_manager.o
 #=========================================================
 
 %.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-all : web_server
+all : server
 
-web_server : $(OBJ)
+server : $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm -rf *o *gch web_server
+	rm -rf *o *gch server

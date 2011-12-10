@@ -65,6 +65,7 @@ class ServerSocket{
 
 	public:
 		// Constructors
+		ServerSocket();
 		ServerSocket(char connection_type, int port_no, int buffer_size, int queueSize, bool (*)(void*));
 		ServerSocket(char connection_type, bool (*)(void*));
 

@@ -1,4 +1,3 @@
-
 #include "server_socket.h" // Header file for server_socket
 
 using std::cout;
@@ -88,6 +87,10 @@ ServerSocket::ServerSocket(char connection_type, bool (*process_fn)(void*)){
 	}
 }
 
+ServerSocket::ServerSocket(){
+
+}
+
 bool ServerSocket::isRunning(){
 	return running;
 }
@@ -168,9 +171,8 @@ void ServerSocket::handleTCPRequest(void *args){
 		cerr << "Error! Couldn't process the request correctly" << endl;
 	}
 
-	//TODO:
-	// should the response be sent from the *process method? i think the response should be built in the server's process method
-	// but sent from here
+	//free the arguements for this request, as it is terminating...
+	delete(ar);
 
 	// because we are implementing HTTTP 1.0 then we will always close the client's file descriptor after processing his ONLY request
 	close(socket_new_file_descriptor);
@@ -198,7 +200,7 @@ bool ServerSocket::handleTcpConnection() {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 
-		void *args[2];
+		void **args = new void*[2];
 		args[0] = (void*)this;
 		args[1] = (void*) &socket_new_file_descriptor;
 
