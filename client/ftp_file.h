@@ -41,6 +41,42 @@ public:
     // Sets the file type.
     void set_type(int type);
 
+    // Sets the file permissions.
+    void set_permissions(const string& permissions);
+
+    // Returns the file name.
+    void get_name(string* name);
+
+    // Returns the file size.
+    long long int get_size();
+
+    // Returns the file user.
+    void get_file_user(string* user);
+
+    // Returns the file group.
+    void get_file_group(string* group);
+
+    // Returns the number of hard links.
+    int get_num_hard_links();
+
+    // Returns the file symbolic link.
+    void get_link(string* link);
+
+    // Returns the file raw listing.
+    void get_raw_listing(string* raw_listing);
+
+    // Returns the file creation day.
+    void get_day(string* day);
+
+    // Returns the file creation time.
+    void get_time(string* time);
+
+    // Returns the file type.
+    int get_type();
+
+    // Returns the file permissions.
+    void get_permissions(string* permissions);
+
 private:
 
     // Name of the file.
@@ -73,6 +109,8 @@ private:
     // File type: symbolic link, directory or file.
     int type;
 
+    // File permissions (TODO MODIFY).
+    string permissions;
 };
 
 #endif // FTP_FILE_H

@@ -2,11 +2,9 @@
 #define FTP_LIST_PARSER_H
 
 #include <vector>
-#include <sstream>
 #include "ftp_file.h"
 
 using std::vector;
-using std::stringstream;
 
 // This class handles the process of parsing a list of file entries from the
 // server. The class pares the results returned from the LIST FTP command.
@@ -18,7 +16,9 @@ public:
 
     // Handles the initial reading and parsing of the list of files returned
     // from the server.
-    void read_server_list(const stringstream& input_stream);
+    void read_server_list(const string& input_stream);
+private:
+    string input_stream;
 };
 
 #endif // FTP_LIST_PARSER_H

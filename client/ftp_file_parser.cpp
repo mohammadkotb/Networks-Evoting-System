@@ -21,9 +21,13 @@ void FtpFileParser::parse_ftp_entry(FtpFile* ftp_file,
     string_input >> time;
     string_input >> filename;
     // Initialize the ftp_file instance.
-    ftp_file->set_file_group(group);
-    ftp_file->set_file_user(owner);
-    ftp_file->set_name(filename);
+    ftp_file->set_permissions(permissions);
     ftp_file->set_num_hard_links(num_hard_links);
+    ftp_file->set_file_user(owner);
+    ftp_file->set_file_group(group);
     ftp_file->set_size(size);
+    ftp_file->set_day(day);
+    ftp_file->set_time(time);
+    ftp_file->set_name(filename);
+    //TODO: handle symbolic links and file type
 }
