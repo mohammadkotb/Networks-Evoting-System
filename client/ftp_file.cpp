@@ -38,7 +38,7 @@ void FtpFile::set_time(const string& time) {
     this->time = time;
 }
 
-void FtpFile::set_type(int type) {
+void FtpFile::set_type(FileType type) {
     this->type = type;
 }
 
@@ -82,7 +82,7 @@ void FtpFile::get_time(string* time) {
     *time = this->time;
 }
 
-int FtpFile::get_type() {
+FileType FtpFile::get_type() {
     return this->type;
 }
 

@@ -3,6 +3,9 @@
 
 #include <string>
 
+//file type enum
+enum FileType {FILE_T,DIR_T, SYMLNK_T};
+
 using std::string;
 
 // Represents information about fles stored in an FTP server.
@@ -39,7 +42,7 @@ public:
     void set_time(const string& time);
 
     // Sets the file type.
-    void set_type(int type);
+    void set_type(FileType type);
 
     // Sets the file permissions.
     void set_permissions(const string& permissions);
@@ -72,7 +75,7 @@ public:
     void get_time(string* time);
 
     // Returns the file type.
-    int get_type();
+    FileType get_type();
 
     // Returns the file permissions.
     void get_permissions(string* permissions);
@@ -107,7 +110,7 @@ private:
     string time;
 
     // File type: symbolic link, directory or file.
-    int type;
+    FileType type;
 
     // File permissions (TODO MODIFY).
     string permissions;
