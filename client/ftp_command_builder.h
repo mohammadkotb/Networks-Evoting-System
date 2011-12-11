@@ -75,6 +75,18 @@ public:
     // for the FTP PORT command.
     void connect_command(string* command, const string& a1, const string& a2,
         const string& a3, const string& a4, const string& p1, const string& p2);
+
+    //Syntax: USER username
+
+    // Updates the output parameter "command" with the properly formatted syntax
+    // for the FTP USER command.
+    void user_command(string * command,const string& username);
+
+    //Syntax: PASS password
+
+    // Updates the output parameter "command" with the properly formatted syntax
+    // for the FTP PASS command.
+    void password_command(string * command,const string& password);
 };
 
 #endif // FTP_COMMAND_BUILDER_H

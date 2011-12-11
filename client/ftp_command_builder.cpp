@@ -9,6 +9,8 @@ const char BYE[] = "QUIT";
 const char RETR[] = "RETR";
 const char STOR[] = "STOR";
 const char PORT[] = "PORT";
+const char USER[] = "USER";
+const char PASS[] = "PASS";
 
 void FtpCommandBuilder::list_command(string* command,
     const string& remote_filespec) {
@@ -81,5 +83,19 @@ void FtpCommandBuilder::connect_command(string* command, const string& a1, const
     *command += p1;
     *command += ",";
     *command += p2;
+}
+
+void FtpCommandBuilder::password_command(string* command,
+    const string& password) {
+    *command += PASS;
+    *command += " ";
+    *command += password;
+}
+
+void FtpCommandBuilder::user_command(string* command,
+    const string& username) {
+    *command += USER;
+    *command += " ";
+    *command += username;
 }
 
