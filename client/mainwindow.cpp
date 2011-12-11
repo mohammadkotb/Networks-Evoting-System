@@ -131,6 +131,7 @@ void MainWindow::downloadFile(){
     }
     qDebug() << info.absoluteFilePath();
     //downloading...
+    ftpClient->retrieve_file(remoteFile.toStdString());
 }
 
 void MainWindow::uploadFile(){

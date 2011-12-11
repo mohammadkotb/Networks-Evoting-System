@@ -33,7 +33,7 @@ public:
     bool remote_store(const string& filename);
 
     // Retrieves a named file from the server and writes it to the given OutputStream.
-    bool retrieve_file(ostream* output_stream, const string& remote);
+    bool retrieve_file(const string& remote);
 
     // Abort a transfer in progress.
     bool abort();
