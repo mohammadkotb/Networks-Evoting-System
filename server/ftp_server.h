@@ -44,10 +44,12 @@ class FTPServer{
 		std::map<int, struct ftp_state *> states;
 		ServerSocket controlServerSocket;
 		pthread_mutex_t states_mutex;
+		ServerSocket dataServerSocket;
 
 		void init(int, int, int, int, int, bool (*)(void*));
-		bool downloadFile_aux(char *, void *);
-		bool uploadFile_aux(char *, void *);
+//		bool downloadFile_aux(char *, void *);
+//		bool uploadFile_aux(char *, void *);
+		static bool processFileTransfer(void *);
 
 	public:
 		FTPServer(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queueSize, bool (*)(void*));
@@ -56,6 +58,8 @@ class FTPServer{
 		bool getTransmitting();
 		int getDataBufferSize();
 		int getControlBufferSize();
+		bool downloadFile(char *, int, void *);
+		bool uploadFile(char *, int, void *);
 
 		static void *downloadFile(void *);
 		static void *uploadFile(void *);

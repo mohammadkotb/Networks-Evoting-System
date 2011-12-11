@@ -126,7 +126,7 @@ bool ServerSocket::writeToSocket(char buffer[], int size, void *args){
 
 	void **ar = (void **) args;
 	int client_file_descriptor = *((int *) ar[1]);
-
+cerr << "dbg: writing to file descriptor: " << client_file_descriptor << ", msg: " << buffer << endl;
 	if(this->connection_type == SOCK_STREAM){
 		int data_size = write(client_file_descriptor, buffer, size);
 		success &= (data_size >= 0);
@@ -153,7 +153,9 @@ void ServerSocket::handleTCPRequest(void *args){
     process_args[1] = (void*) (ar[1]); //client_socket_address (originally obtained from the accept() method)
     while (1){
         // block wait till the client sends its message
+    	memset(buffer, 0, sizeof(buffer));
         int rc = read_tcp(buffer, socket_new_file_descriptor);
+cerr << "from read_tcp: " << buffer << endl;
         if(rc == 0){
             cerr << "client closed connection" << endl;
             break;
@@ -171,8 +173,9 @@ void ServerSocket::handleTCPRequest(void *args){
     }
 
 	//free the arguements for this request, as it is terminating...
+    delete((int *)ar[1]);
 	delete(ar);
-
+cerr << "dbg: closing fd: " << socket_new_file_descriptor << endl;
     //close the socket when tcp session finished
 	close(socket_new_file_descriptor);
 }
@@ -189,6 +192,7 @@ bool ServerSocket::handleTcpConnection() {
 		// Block and wait for client requests. A wait a connection on socket_file_descriptor.
 		// Updates the client address and client address size accordingly.
 		socket_new_file_descriptor = accept(socket_file_descriptor, (sockaddr *) &client_address, &client_size);
+cerr << "dbg: " << socket_new_file_descriptor << endl;
 		if (socket_file_descriptor < 0) {
 			cerr << "Error! Unable to accept TCP connection" << endl;
 			cerr << "Server is shutting down" << endl;
@@ -201,7 +205,8 @@ bool ServerSocket::handleTcpConnection() {
 
 		void **args = new void*[2];
 		args[0] = (void*)this;
-		args[1] = (void*) &socket_new_file_descriptor;
+//		args[1] = (void*) &socket_new_file_descriptor;
+		args[1] = (void *) new int(socket_new_file_descriptor);
 
 		if(pthread_create(&thrd, NULL, playThread, (void *)args)){
 			cerr << "Failed to create thread!";
@@ -224,10 +229,6 @@ void ServerSocket::handleUDPRequest(void *args){
 
 	// handle request
 	(*process)(ar);
-
-	//TODO:
-	// should the response be sent from the *process method? i think the response should be built in the server's process method
-	// but sent from here
 }
 
 // Sets the server for UDP connection.

@@ -42,7 +42,7 @@ class ServerSocket{
 		// auxiliary function for initializing the server socket
 		bool setupServer();
 
-		// reads message sent by clients in case of TCP
+		// reads message sent by clients in case of TCP and returns number of bytes read
 		int read_tcp(char *, int client_file_descriptor);
 
 		// logic for handling a single TCP request
