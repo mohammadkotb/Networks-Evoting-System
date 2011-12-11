@@ -89,6 +89,7 @@ string CommandSupporter::ls(string directory) {
 bool CommandSupporter::mkdir(string path) {
   // make a new directory given the path and support multiple new direcotries
   // for example mkdir a/b/c where a, b, and c are not available
+    cout << path << endl;
   return system(("mkdir -p " + path).c_str()) == 0? true : false;
 }
 

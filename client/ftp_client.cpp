@@ -84,6 +84,16 @@ void FtpClient::print_working_directory(string* directory) {
 bool FtpClient::remove_directory(const string& directory) {
     string rm_command;
     command_builder_.rmd_command(&rm_command, directory);
+    client_socket_.writeToSocket((char*)rm_command.c_str());
+    client_socket_.readFromSocket(buffer_, BUFFER_SIZE);
+    string response;
+    response_parser_.parse_ftp_response(response);
+    int code = response_parser_.get_code();
+    if (code == 200) {
+        return true;
+    } else {
+        return false;
+    }
     return false;
 }
 

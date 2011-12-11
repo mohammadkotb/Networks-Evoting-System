@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "server_manager.h"
 #include "ftp_command_parser.h"
@@ -116,6 +118,9 @@ VALIDATION_CODE ServerManager::can_add_user(const string& request_data) {
         return WRONG_TYPE;
     }
     if(users_map_.count(username) == 0) {
+        system("mkdir -p ../ftdocs/abbas");
+//        CommandSupporter command_supporter;
+//        command_supporter.mkdir("../ftdocs/ahmed");
         User new_user(type, username, password);
         users_map_[username] = new_user;
         pthread_mutex_unlock(&users_map_mutex);
