@@ -181,11 +181,6 @@ bool FTPServer::processFileTransfer(void *args){
 
 	sscanf(buffer, "%d %s %d", &client_control_fd, fileName, &transfer_type);
 
-#ifdef DBG
-	int client_fd = *((int *) ar[1]);
-	cerr << "dbg: (" << client_fd << ", " << client_control_fd << ")" << endl;
-#endif
-
 	if(transfer_type == 0){ //upload
 		ftpServer->uploadFile(fileName, client_control_fd, args);
 	} else if(transfer_type == 1){ //download
@@ -234,14 +229,12 @@ bool go_ftp_server(void *args){
 //			sleep(5);
 
 			sprintf(response, "%d", client_fd);
-			cerr << "dbg: sending response: " << response << endl;
 			serverSocket->writeToSocket(response, args);
 			break;
 		case 1: //download
 //			ftpServer->openDataConnection(raw_request, DOWNLOAD, args);
 //			sleep(5);
 			sprintf(response, "%d", client_fd);
-			cerr << "dbg: sending response: " << response << endl;
 			serverSocket->writeToSocket(response, args);
 			break;
 		case 2: //connect

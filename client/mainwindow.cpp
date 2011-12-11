@@ -45,9 +45,9 @@ void MainWindow::makeDirectory(){
     //TODO:check for return values
     QTreeWidgetItem * item = ui->remoteTreeWidget->currentItem();
     QString itemName = item->data(0,Qt::UserRole).toString();
-    if (itemName[itemName.length()-1] != '/'){
+    if (itemName[itemName.length()-1] != '/')
         return;
-    }
+    itemName += "mydirectory";
     ftpClient->make_directory(itemName.toStdString());
 }
 
