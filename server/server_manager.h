@@ -26,6 +26,10 @@ public:
     // sets the output parameter "response" with the serialized server response.
     void handle_request(string* response, const string& request_data);
 
+    // Handles the FTP client commands. This functions accepts the command_data as input and
+    // sets the output parameter "response" with the serilalized server response.
+    void handle_ftp_command(string* response, const string& command_data);
+
    // constructor
    ServerManager();
 

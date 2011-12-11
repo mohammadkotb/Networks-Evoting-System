@@ -65,6 +65,10 @@ bool handle_ftp_request(void *args){
     ftpServer->addState(client_fd, &state);
 
     //TODO: the method should parse the request and respond with the proper response
+    string response;
+    string command_data(buffer_file_name);
+    server_manager.handle_ftp_command(&response, command_data);
+    cout << response << endl;
     /*
        ftpServer->openDataConnection(buffer_file_name, DOWNLOAD, args);
     */

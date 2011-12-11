@@ -1,10 +1,23 @@
-#include "server_manager.h"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 
+#include "server_manager.h"
+#include "ftp_command_parser.h"
+#include "command_support.h"
+
 using std::ifstream;
 using std::iostream;
+
+const char LIST[] = "LIST";
+const char PWD[] = "PWD";
+const char CWD[] = "CWD";
+const char MKD[] = "MKD";
+const char RMD[] = "RMD";
+const char BYE[] = "QUIT";
+const char RETR[] = "RETR";
+const char STOR[] = "STOR";
+const char PORT[] = "PORT";
 
 ServerManager::ServerManager(){
     pthread_mutex_init(&users_map_mutex, NULL);
@@ -114,4 +127,27 @@ VALIDATION_CODE ServerManager::can_add_user(const string& request_data) {
 	pthread_mutex_unlock(&users_map_mutex);
         return USED_USERNAME;
     }
+}
+
+void ServerManager::handle_ftp_command(string* response, const string& command_data) {
+    // Parse the command sent from server.
+    FtpCommandParser command_parser;
+    command_parser.parse_command(command_data);
+    string head, body;
+    command_parser.get_command_head(&head);
+    command_parser.get_command_body(&body);
+    // Handle the different commands.
+    CommandSupporter command_supporter;
+    if (head == LIST) {
+        // Handle the list command
+        *response = command_supporter.ls(body);
+    } else if (head == MKD) {
+        *response = command_supporter.mkdir(body);
+    } else if (head == CWD) {
+        // TODO: CHECK PARAMETERS WITH KOTB
+        *response = command_supporter.cd(body, body);
+    } else if (head == RMD) {
+        command_supporter.rm(body);
+    }
+    // handle rest of commands here
 }

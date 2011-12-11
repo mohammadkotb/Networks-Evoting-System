@@ -8,10 +8,11 @@
 #include <sys/types.h>
 #include <sstream>
 
+#include "command_support.h"
 
 using namespace std;
 
-string ls(string directory) {
+string CommandSupporter::ls(string directory) {
   // given a directory return a string \n delimited containing all
   // sub files and directories, and return "" if there is any error
   // occurred
@@ -80,7 +81,7 @@ string ls(string directory) {
   }
 }
 
-bool mkdir(string path) {
+bool CommandSupporter::mkdir(string path) {
   // make a new directory given the path and support multiple new direcotries
   // for example mkdir a/b/c where a, b, and c are not available
   return system(("mkdir -p " + path).c_str()) == 0? true : false;
@@ -102,7 +103,7 @@ bool rm(string path) {
   return system(cmd.c_str()) == 0 ? true : false;
 }
 
-bool cd(string current_path, string arg) {
+bool CommandSupporter::cd(string current_path, string arg) {
   // given a current directory and the argument written after cd
   // return true if this argument is a valid directory
   // false otherwise
