@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
             SLOT(fetchFolder(QTreeWidgetItem*,int)));
     connect(ui->downloadButton,SIGNAL(clicked()),SLOT(downloadFile()));
     connect(ui->uploadButton,SIGNAL(clicked()),SLOT(uploadFile()));
-
+    connect(ui->connectPushButton,SIGNAL(clicked()) ,SLOT(ftpConnect()));
 
     //setup local and remote ftp trees
     QFileSystemModel *model = new QFileSystemModel();
@@ -37,6 +37,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     ui->remoteTreeWidget->addTopLevelItem(it);
 
     renderEngine = new GuiRenderer(ui->canvas->widget(),this);
+}
+
+void MainWindow::ftpConnect(){
+    try{
+        ftpClient = new FtpClient(ui->hostLineEdit->text().toStdString(),7070);
+        QString username = "\"" + ui->usernameLineEdit->text() +  "\"";
+        QString password = "\"" + ui->passwordLineEdit->text() +  "\"";
+        ftpClient->login(username.toStdString(),password.toStdString());
+    }catch(int e){
+        qDebug() << "Can't connect to ftp server";
+    }
 }
 
 void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
