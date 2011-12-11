@@ -126,7 +126,7 @@ VALIDATION_CODE ServerManager::can_add_user(const string& request_data) {
     }
 }
 
-void ServerManager::handle_ftp_command(string* response, const string& command_data) {
+void ServerManager::handle_ftp_command(string* response, const string& command_data, ftp_state & state) {
     // Parse the command sent from server.
     FtpCommandParser command_parser;
     command_parser.parse_command(command_data);
@@ -149,6 +149,19 @@ void ServerManager::handle_ftp_command(string* response, const string& command_d
         *response = command_supporter.cd(body, body);
     } else if (head == RMD) {
         command_supporter.rm(body);
+    } else if (head == USER) {
+        state.username = body;
+        *response = USER_NAME_OK;
+    }else if (head == PASS){
+        if (users_map_.count(state.username) == 0)
+            *response = INVALID_AUTHENTICATION;
+        else{
+            User u = users_map_[state.username];
+            if (u.getPassword() != body)
+                *response = INVALID_AUTHENTICATION;
+            else
+                *response = COMMAND_OK;
+        }
     }
     // handle rest of commands here
 }

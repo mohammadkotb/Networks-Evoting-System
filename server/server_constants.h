@@ -7,6 +7,12 @@
 
 #define COMMAND_OK "200 Command okay"
 
+#define USER_NAME_OK "331 User name ok , need password"
+
+#define NOT_AUTHENTICATED "332 not authenticated"
+
+#define INVALID_AUTHENTICATION "430 invalid username or password"
+
 #define SYNTAX_ERROR "500 Syntax error, command unrecognized"
 
 #define NOT_IMPLEMENTED "502 Command not implemented"
@@ -32,5 +38,7 @@ const char BYE[] = "QUIT";
 const char RETR[] = "RETR";
 const char STOR[] = "STOR";
 const char PORT[] = "PORT";
+const char USER[] = "USER";
+const char PASS[] = "PASS";
 
 #endif // FTP_REPLY_H

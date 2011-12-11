@@ -26,7 +26,7 @@ int FTPServer::getControlBufferSize(){
 	return this->controlBufferSize;
 }
 
-void FTPServer::addState(int fileDescriptor, struct ftp_state *state){
+void FTPServer::addState(int fileDescriptor, ftp_state *state){
 	pthread_mutex_lock(&states_mutex);
 	states[fileDescriptor] = state;
 	pthread_mutex_unlock(&states_mutex);
@@ -39,6 +39,8 @@ void FTPServer::removeState(int fileDescriptor){
 }
 
 struct ftp_state * FTPServer::getState(int fileDescriptor){
+    if (states.find(fileDescriptor) == states.end())
+        return 0;
 	return states.find(fileDescriptor)->second;
 }
 

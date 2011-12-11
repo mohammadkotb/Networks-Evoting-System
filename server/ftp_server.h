@@ -26,13 +26,13 @@ const int defaultControlBufferSize = 1<<10;
 const int defaultDataBufferSize = 1<<20;
 enum DataTransferType { UPLOAD, DOWNLOAD };
 
-struct ftp_state{
-	std::string username;
-	std::string current_dir;
-	bool is_guest;
-	bool is_connection_open;
-	bool cancel_transmission;
-	int x;
+class ftp_state{
+    public:
+        std::string username;
+        std::string current_dir;
+        bool is_guest;
+        bool is_connection_open;
+        bool cancel_transmission;
 };
 
 class FTPServer{
@@ -41,7 +41,7 @@ class FTPServer{
 		int dataPortNumber;
 		int controlBufferSize;
 		int dataBufferSize;
-		std::map<int, struct ftp_state *> states;
+		std::map<int, ftp_state *> states;
 		ServerSocket controlServerSocket;
 		pthread_mutex_t states_mutex;
 
@@ -61,7 +61,7 @@ class FTPServer{
 		static void *uploadFile(void *);
 		bool openDataConnection(char *, DataTransferType, void *);
 		void run();
-		void addState(int, struct ftp_state *);
+		void addState(int, ftp_state *);
 		void removeState(int);
 		struct ftp_state * getState(int);
 };

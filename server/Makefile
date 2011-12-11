@@ -6,7 +6,8 @@ CFLAGS= -pthread
 
 DEPS = http_get_request_parser.h http_response_builder.h \
 	   server_socket.h user.h client_socket.h server_manager.h \
-	   ftp_server.h command_support.h ftp_command_parser.h
+	   ftp_server.h command_support.h ftp_command_parser.h \
+	   server_constants.h
 
 OBJ = http_get_request_parser.o http_response_builder.o \
 	  server_actions.o server.o server_socket.o user.o \
