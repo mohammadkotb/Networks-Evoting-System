@@ -11,6 +11,7 @@ void FtpFileParser::parse_ftp_entry(FtpFile* ftp_file,
     string permissions, owner, group, day, time, filename;
     long long int size;
     int num_hard_links;
+        string type;
     // Extract values from the string stream.
     string_input >> permissions;
     string_input >> num_hard_links;
@@ -20,6 +21,7 @@ void FtpFileParser::parse_ftp_entry(FtpFile* ftp_file,
     string_input >> day;
     string_input >> time;
     string_input >> filename;
+        string_input >> type;
     // Initialize the ftp_file instance.
     ftp_file->set_permissions(permissions);
     ftp_file->set_num_hard_links(num_hard_links);
@@ -29,5 +31,10 @@ void FtpFileParser::parse_ftp_entry(FtpFile* ftp_file,
     ftp_file->set_day(day);
     ftp_file->set_time(time);
     ftp_file->set_name(filename);
-    //TODO: handle symbolic links and file type
+    if (type == "dir") {
+        ftp_file->set_type(DIR_T);
+    } else if (type == "file") {
+        ftp_file->set_type(FILE_T);
+    }
+    //TODO: handle symbolic links
 }

@@ -75,9 +75,11 @@ string CommandSupporter::ls(string directory) {
 
       // pushing file name
       string file_name(file);
-      ss << file_name << " ";
+      ss << file_name;
 
       // pushing file type
+      if (type == "dir") ss << "/ ";
+      else ss << " ";
       ss << type;
     }
     return ss.str();

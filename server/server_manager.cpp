@@ -141,7 +141,8 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
     CommandSupporter command_supporter;
     if (head == LIST) {
         // Handle the list command
-        *response = command_supporter.ls(body);
+        string username = state.username.substr(1,state.username.size()-2);
+        *response = command_supporter.ls("../ftdocs/" + username + body);
     } else if (head == MKD) {
         if (command_supporter.mkdir(body)) {
             *response = COMMAND_OK;

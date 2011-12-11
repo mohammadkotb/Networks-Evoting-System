@@ -69,10 +69,10 @@ void MainWindow::ftpConnect(){
 
 void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
     QString itemName = item->data(0,Qt::UserRole).toString();
+    qDebug() << "fetching .. " << itemName;
     if (itemName[itemName.length()-1] != '/'){
         return;
     }
-    qDebug() << "fetching .. " << itemName;
     vector<FtpFile> files;
     //request file list
     ftpClient->list_files(&files,itemName.toStdString());
