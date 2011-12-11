@@ -109,7 +109,7 @@ int ServerSocket::getConnectionType(){
 
 int ServerSocket::read_tcp(char buffer[], int client_file_descriptor){
 	memset(buffer, 0, bufferSize);
-	return read(client_file_descriptor, buffer, bufferSize - 1);
+	return read(client_file_descriptor, buffer, bufferSize);
 }
 
 bool ServerSocket::writeToSocket(char buffer[], void *args){
@@ -156,11 +156,9 @@ void ServerSocket::handleTCPRequest(void *args){
         int rc = read_tcp(buffer, socket_new_file_descriptor);
         if(rc == 0){
             cerr << "client closed connection" << endl;
-            pthread_exit(NULL);
             break;
         }else if (rc < 0){
             cerr << "error reading from tcp connection" << endl;
-            pthread_exit(NULL);
             break;
         }
         process_args[2] = (void*) buffer;

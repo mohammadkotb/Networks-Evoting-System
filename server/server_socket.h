@@ -43,7 +43,6 @@ class ServerSocket{
 		bool setupServer();
 
 		// reads message sent by clients in case of TCP
-        // and returns number of bytes read
 		int read_tcp(char *, int client_file_descriptor);
 
 		// logic for handling a single TCP request

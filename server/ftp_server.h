@@ -54,6 +54,8 @@ class FTPServer{
 		FTPServer(bool (*)(void*));
 		void cancelTransmission();
 		bool getTransmitting();
+		int getDataBufferSize();
+		int getControlBufferSize();
 
 		static void *downloadFile(void *);
 		static void *uploadFile(void *);
