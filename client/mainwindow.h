@@ -48,6 +48,8 @@ public slots:
     void uploadFile();
 
     void ftpConnect();
+    void ftpDisconnect();
+    void makeDirectory();
 
 private:
     Ui::MainWindow *ui;

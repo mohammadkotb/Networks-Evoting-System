@@ -29,7 +29,7 @@ public:
 
     // Handles the FTP client commands. This functions accepts the command_data as input and
     // sets the output parameter "response" with the serilalized server response.
-    void handle_ftp_command(string* response, const string& command_data,ftp_state &);
+    bool handle_ftp_command(string* response, const string& command_data,ftp_state &);
 
    // constructor
    ServerManager();

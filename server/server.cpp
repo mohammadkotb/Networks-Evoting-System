@@ -67,14 +67,14 @@ bool handle_ftp_request(void *args){
     }
     string response;
     string command_data(buffer_file_name);
-    server_manager.handle_ftp_command(&response, command_data,*state);
+    bool keepConnection = server_manager.handle_ftp_command(&response, command_data,*state);
     serverSocket->writeToSocket((char*)response.c_str(), args);
     cout << response << endl;
     /*
        ftpServer->openDataConnection(buffer_file_name, DOWNLOAD, args);
     */
 
-    return true;
+    return keepConnection;
 }
 
 void * init_web_server(void * arg){

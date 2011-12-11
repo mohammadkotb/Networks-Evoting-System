@@ -19,7 +19,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>572</width>
+      <width>589</width>
       <height>572</height>
      </rect>
     </property>
@@ -63,8 +63,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>544</width>
-                <height>480</height>
+                <width>561</width>
+                <height>482</height>
                </rect>
               </property>
              </widget>
@@ -73,8 +73,6 @@
           </layout>
          </item>
         </layout>
-        <zorder>layoutWidget</zorder>
-        <zorder>canvas</zorder>
        </widget>
        <widget class="QWidget" name="ftptab">
         <attribute name="title">
@@ -223,6 +221,20 @@
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QPushButton" name="mkdirPushButton">
+                  <property name="text">
+                   <string>make Directory</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="rmdirPushButton">
+                  <property name="text">
+                   <string>remove dir</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
              </layout>
@@ -243,7 +255,7 @@
      <x>0</x>
      <y>0</y>
      <width>605</width>
-     <height>24</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

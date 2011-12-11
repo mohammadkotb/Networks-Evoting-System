@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     connect(ui->downloadButton,SIGNAL(clicked()),SLOT(downloadFile()));
     connect(ui->uploadButton,SIGNAL(clicked()),SLOT(uploadFile()));
     connect(ui->connectPushButton,SIGNAL(clicked()) ,SLOT(ftpConnect()));
+    connect(ui->disconnectPushButton,SIGNAL(clicked()) ,SLOT(ftpDisconnect()));
+    connect(ui->mkdirPushButton,SIGNAL(clicked()) ,SLOT(makeDirectory()));
 
     //setup local and remote ftp trees
     QFileSystemModel *model = new QFileSystemModel();
@@ -39,7 +41,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     renderEngine = new GuiRenderer(ui->canvas->widget(),this);
 }
 
+void MainWindow::makeDirectory(){
+    //TODO:check for return values
+    QTreeWidgetItem * item = ui->remoteTreeWidget->currentItem();
+    QString itemName = item->data(0,Qt::UserRole).toString();
+    if (itemName[itemName.length()-1] != '/'){
+        return;
+    }
+    ftpClient->make_directory(itemName.toStdString());
+}
+
+void MainWindow::ftpDisconnect(){
+    //TODO:check for return values
+    ftpClient->disconnect();
+}
 void MainWindow::ftpConnect(){
+    //TODO:check for return values of login
     try{
         ftpClient = new FtpClient(ui->hostLineEdit->text().toStdString(),7070);
         QString username = "\"" + ui->usernameLineEdit->text() +  "\"";

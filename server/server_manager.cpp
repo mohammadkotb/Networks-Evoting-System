@@ -126,7 +126,7 @@ VALIDATION_CODE ServerManager::can_add_user(const string& request_data) {
     }
 }
 
-void ServerManager::handle_ftp_command(string* response, const string& command_data, ftp_state & state) {
+bool ServerManager::handle_ftp_command(string* response, const string& command_data, ftp_state & state) {
     // Parse the command sent from server.
     FtpCommandParser command_parser;
     command_parser.parse_command(command_data);
@@ -162,6 +162,10 @@ void ServerManager::handle_ftp_command(string* response, const string& command_d
             else
                 *response = COMMAND_OK;
         }
+    }else if (head == BYE){
+        *response = "Bye";
+        return false;
     }
+    return true;
     // handle rest of commands here
 }
