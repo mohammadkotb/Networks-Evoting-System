@@ -57,6 +57,7 @@ bool FtpClient::remote_store(const string& filename) {
 }
 
 void * download_aux(void *args){
+    cout<<"IN AUX"<<endl;
                 ClientSocket dataSocket('T', 7071);
 
                 char file_name_buf[256];
@@ -68,6 +69,8 @@ void * download_aux(void *args){
                 sscanf(ar->c_str(), "%d %s", &client_fd, file_name_buf);
                 delete(ar);
 
+//                string r ("/home/amr/finalrepo/Networks-Evoting-System/test");
+                strcpy(file_name_buf, "/home/amr/finalrepo/Networks-Evoting-System/test2");
                 cerr << "Requesting file: " << file_name_buf << endl;
                 dataSocket.writeToSocket(args_local);
 
@@ -93,14 +96,20 @@ void * download_aux(void *args){
 }
 
 bool FtpClient::retrieve_file(const string& fileName) {
+    string other("/home/amr/finalrepo/Networks-Evoting-System/test");
     char file_name_buf[1<<8];
-    strcpy(file_name_buf, fileName.c_str());
+    //strcpy(file_name_buf, fileName.c_str());
+    strcpy(file_name_buf, other.c_str());
     cerr << "Requesting file: " << file_name_buf << endl;
-    client_socket_.writeToSocket(file_name_buf);
+    string download_command;
+    //command_builder_.download_command(&download_command, fileName);
+    command_builder_.download_command(&download_command, other);
+    client_socket_.writeToSocket((char*) download_command.c_str());
 
 //========================================================
     char response[1<<8];
     client_socket_.readFromSocket(response, 1<<8);
+    cout << "THIS IS THE CLIENT FD: " << response;
     int client_fd;
     sscanf(response, "%d", &client_fd);
 

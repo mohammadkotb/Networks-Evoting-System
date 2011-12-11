@@ -1,6 +1,8 @@
 #include "ftp_server.h"
 #define DBG
 
+using namespace std;
+
 void FTPServer::init(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queueSize, bool (*process_fn)(void*)){
 	this->controlPortNumber = control_port_no;
 	this->dataPortNumber = data_port_no;
@@ -40,18 +42,38 @@ void FTPServer::removeState(int fileDescriptor){
 	pthread_mutex_unlock(&states_mutex);
 }
 
-struct ftp_state * FTPServer::getState(int fileDescriptor){
+ftp_state * FTPServer::getState(int fileDescriptor){
+    cerr << "in getState" << endl;
+    for(map<int, ftp_state*>::iterator it = states.begin(); it != states.end() ; ++it){
+        cout << it->first << endl;
+        cout << it->second->username << endl;
+    }
     if (states.find(fileDescriptor) == states.end())
         return 0;
-	return states.find(fileDescriptor)->second;
+    return states.find(fileDescriptor)->second;
 }
 
 bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
+    cout << "In download file" << endl;
 	void **ar = (void **) args;
+        cout << "HERE-2" << endl;
 	ServerSocket *dataServerSocket = (ServerSocket *) ar[0];
-	struct ftp_state * state = this->getState(control_fd);
+        cout << "HERE-1" << endl;
+        cout << "contorl_fd @ server = " << control_fd << endl;
+        cout << "data_fd @ server = " << (*((int *) ar[1])) << endl;
+        cerr << "this.getDataBufferSize = " << ftpServer->getDataBufferSize() << endl;
+        ftp_state * state = ftpServer->getState(control_fd);
 
-	state->is_connection_open = true;
+        cout << "HERE0" << endl;
+        /*
+        string temp(fileName);
+        string u = state->username;
+        u = u.substr(1,u.size()-1);
+        temp = "../ftdocs/" + u + temp;
+        cout << "FILE NAME + " << temp << endl;
+        fileName = (char *) temp.c_str();
+        */
+        state->is_connection_open = true;
 
 	FILE *fin = fopen(fileName, "r");
 	if(!fin){
@@ -61,15 +83,20 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
 		return false;
 	}
 
+        cout<<"HERE1"<<endl;
 //	int bufSz = dataServerSocket->getBufferSize();
 	int bufSz = getDataBufferSize();
 	char packet[bufSz];
+
+        cout<<"HERE2"<<endl;
 
 	int n;
 	while(!(state->cancel_transmission) && (n=fread(packet, 1, bufSz, fin))){
 		dataServerSocket->writeToSocket(packet, n, args);
 //		sleep(1);
 	}
+
+        cout<<"HERE3"<<endl;
 
 	cerr << "closing file " << fileName << endl;
 	if(fclose(fin)==EOF){
@@ -79,14 +106,17 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
 		return false;
 	}
 
+        cout<<"HERE4"<<endl;
+
 	state->is_connection_open = false;
 	state->cancel_transmission = false;
+        cout << "DONE IN DOWNLOAD FILE" << endl;
 	return true;
 }
 
 bool FTPServer::uploadFile(char *fileName, int control_fd, void *args){
 	void **ar = (void **) args;
-	struct ftp_state * state = this->getState(control_fd);
+        ftp_state * state = this->getState(control_fd);
 
 	state->is_connection_open = true;
 
@@ -172,6 +202,7 @@ bool FTPServer::openDataConnection(char *fileName, DataTransferType type, void *
 */
 
 bool FTPServer::processFileTransfer(void *args){
+    cout << "IN PROCESS FILE" << endl;
 	void **ar = (void **) args;
 	char *buffer = (char *) ar[2];
 
@@ -211,7 +242,7 @@ bool go_ftp_server(void *args){
 
 	// temp code
 	int command_type = 0;
-	struct ftp_state state;
+        ftp_state state;
 	//TODO: the state should be initialized using client commands: connect / login AND i need a message telling me whether the client is a candidate or a voter (to set the isGuest flag)
 	state.cancel_transmission = false;
 	state.is_connection_open = false;

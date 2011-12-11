@@ -33,6 +33,7 @@ class ftp_state{
         bool is_guest;
         bool is_connection_open;
         bool cancel_transmission;
+        int clientfd;
 };
 
 class FTPServer{
@@ -64,7 +65,7 @@ class FTPServer{
 		void run();
 		void addState(int, ftp_state *);
 		void removeState(int);
-		struct ftp_state * getState(int);
+                ftp_state * getState(int);
 };
 
 static FTPServer *ftpServer;

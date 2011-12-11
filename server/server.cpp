@@ -63,6 +63,7 @@ bool handle_ftp_request(void *args){
         state->current_dir = "/";
         state->is_guest = true;
         state->username = "";
+        state->clientfd = client_fd;
         ftpServer->addState(client_fd, state);
     }
     string response;

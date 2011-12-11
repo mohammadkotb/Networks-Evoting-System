@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -11,6 +12,7 @@
 
 using std::ifstream;
 using std::iostream;
+using std::stringstream;
 
 ServerManager::ServerManager(){
     pthread_mutex_init(&users_map_mutex, NULL);
@@ -170,6 +172,13 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
     }else if (head == BYE){
         *response = "Bye";
         return false;
+    } else if (head == RETR) {
+        stringstream sin("");
+        sin << (state.clientfd);
+        string clientfd_str;
+        sin >> clientfd_str;
+        cout << "client fd @ server = " << clientfd_str << endl;
+        *response = clientfd_str;
     }
     return true;
     // handle rest of commands here
