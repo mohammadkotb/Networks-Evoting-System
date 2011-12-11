@@ -32,8 +32,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     //dummy data
     QTreeWidgetItem* it = new QTreeWidgetItem();
-    it->setText(0,"MyDir");
-    it->setData(0,Qt::UserRole,QVariant("data/"));
+    it->setText(0,"root");
+    it->setData(0,Qt::UserRole,QVariant("/"));
     ui->remoteTreeWidget->addTopLevelItem(it);
 
     renderEngine = new GuiRenderer(ui->canvas->widget(),this);
@@ -56,38 +56,25 @@ void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
         return;
     }
     qDebug() << "fetching .. " << itemName;
+    vector<FtpFile> files;
     //request file list
-    //...
+    ftpClient->list_files(&files,itemName.toStdString());
     //parse the outcome
     //...
     //display the outcome
-    vector<FtpFile*> files;
-    //dummy example
-    for(int i=0;i<3;i++){
-        FtpFile *f = new FtpFile();
-        f->set_size(i*20 + 5);
-        if (i==1){
-            f->set_name("Dir");
-            f->set_type(DIR_T);
-        }else{
-            f->set_name("File");
-            f->set_type(FILE_T);
-        }
-        files.push_back(f);
-    }
     //displaying files and folders
     //first files
     for(unsigned int i=0;i<files.size();i++){
-        FtpFile *f = files[i];
+        FtpFile f = files[i];
         QTreeWidgetItem* it = new QTreeWidgetItem();
-        string name;f->get_name(&name);
+        string name;f.get_name(&name);
         QString qname = QString::fromStdString(name);
         it->setText(0,qname);
-        it->setText(1,QString::number(f->get_size()));
-        if (f->get_type() == DIR_T){
+        it->setText(1,QString::number(f.get_size()));
+        if (f.get_type() == DIR_T){
             it->setData(0,Qt::UserRole,QVariant(itemName + qname + "/"));
             it->setIcon(0,QIcon("../imgs/dir.png"));
-        }else if (f->get_type() == FILE_T){
+        }else if (f.get_type() == FILE_T){
             it->setData(0,Qt::UserRole,QVariant(itemName + qname));
             it->setIcon(0,QIcon("../imgs/file.png"));
         }
