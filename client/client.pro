@@ -22,6 +22,8 @@ SOURCES += main.cpp\
     ftp_list_parser.cpp \
     test_main.cpp \
     ftp_file_parser.cpp \
+    ftp_client.cpp \
+    ftp_response_parser.cpp
 
 HEADERS  += mainwindow.h \
     gui_renderer.h \
@@ -32,9 +34,15 @@ HEADERS  += mainwindow.h \
     ftp_command_builder.h \
     ftp_file.h \
     ftp_file_parser.h \
-    ftp_list_parser.h
+    ftp_list_parser.h \
+    ftp_client.h \
+    ftp_response_parser.h
 
 FORMS    += mainwindow.ui
+
+
+
+
 
 
 

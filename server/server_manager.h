@@ -6,6 +6,7 @@
 #include "http_get_request_parser.h"
 #include "http_response_builder.h"
 #include "user.h"
+#include "ftp_server.h"
 
 using std::string;
 using std::map;
@@ -28,7 +29,7 @@ public:
 
     // Handles the FTP client commands. This functions accepts the command_data as input and
     // sets the output parameter "response" with the serilalized server response.
-    void handle_ftp_command(string* response, const string& command_data);
+    void handle_ftp_command(string* response, const string& command_data,ftp_state &);
 
    // constructor
    ServerManager();
@@ -59,6 +60,10 @@ private:
 
     // Checks whether the user data is valid or not.
     bool valid_user(const string& request_data);
+
+    // Handles the login procedures when receiving a request for the login.php
+    // page.
+    void handle_login(string* response, const string& request_data);
 
 };
 

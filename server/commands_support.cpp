@@ -28,6 +28,7 @@ string CommandSupporter::ls(string directory) {
 
   if (dir != NULL) {
     stringstream ss; // create stringstream for getting data for the directory
+    bool first = true;
     while ((ent = readdir(dir)) != NULL) {
       char *file = ent->d_name;
 
@@ -48,6 +49,10 @@ string CommandSupporter::ls(string directory) {
         type = "file";
       }
 
+      if (!first) {
+          ss << endl;
+      }
+      first = false;
       ss << "0 0 0 0 ";
 
       // pushing size in case of file and 0 otherwise
@@ -73,7 +78,7 @@ string CommandSupporter::ls(string directory) {
       ss << file_name << " ";
 
       // pushing file type
-      ss << type << endl;
+      ss << type;
     }
     return ss.str();
   } else {
@@ -87,7 +92,7 @@ bool CommandSupporter::mkdir(string path) {
   return system(("mkdir -p " + path).c_str()) == 0? true : false;
 }
 
-bool rm(string path) {
+bool CommandSupporter::rm(string path) {
   // given a path, check if it is a directory or a file
   // and remove it and return true if removal is done successfully
   // false otherwise
@@ -120,16 +125,4 @@ bool CommandSupporter::cd(string current_path, string arg) {
     return false;
   }
 }
-
-/*
-int main() {
-  cout << "Result:" << endl;
-  cout << ls("/home/mohammadkotb/test/");
-//  cout << "mkdir: " << mkdir("/home/mohammadkotb/test/tota/hamada") << endl;
-//  cout << "rm file: " << rm("/home/mohammadkotb/test/tota") << endl;
-  cout << cd("/home/mohammadkotb/test", "folder") << endl;
-  cout << cd("/home/mohammadkotb/test", "hamda") << endl;
-  return 0;
-}
-*/
 

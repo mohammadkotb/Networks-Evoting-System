@@ -9,6 +9,7 @@
 #include "client_socket.h"
 #include "http_get_request_builder.h"
 #include "ftp_file.h"
+#include "ftp_client.h"
 
 #define BUFFER_SIZE 2048
 
@@ -46,11 +47,14 @@ public slots:
     //uploads the selected file to server
     void uploadFile();
 
+    void ftpConnect();
+
 private:
     Ui::MainWindow *ui;
     char * buffer;
     GuiRenderer * renderEngine;
     QString currentUrl;
+    FtpClient * ftpClient;
 
 };
 

@@ -6,6 +6,7 @@
 #include "http_get_request_parser.h"
 #include "server_manager.h"
 #include "ftp_server.h"
+#include "stdlib.h"
 
 using namespace std;
 
@@ -48,26 +49,26 @@ bool handle_web_request(void * args){
 
 bool handle_ftp_request(void *args){
     void **ar = (void **) args;
+	ServerSocket *serverSocket = (ServerSocket *) ar[0];
     int client_fd = *((int *) ar[1]);
     char *buffer_file_name = (char *) ar[2];
     cerr << "RAW FTP REQUEST : " << buffer_file_name << endl;
 
-    struct ftp_state state;
-    //TODO: the state should be initialized using client commands: connect / login AND i need a
-    //message telling me whether the client is a candidate or a voter (to set the isGuest flag)
-    state.cancel_transmission = false;
-    state.is_connection_open = false;
-    state.current_dir = "/";
-    state.is_guest = true;
-    state.username = "";
-    //TODO: the addState should be called in response to "connect (or any other type of message)"
-    //command from the user
-    ftpServer->addState(client_fd, &state);
-
-    //TODO: the method should parse the request and respond with the proper response
+    ftp_state * state;
+    state = ftpServer->getState(client_fd);
+    if (state == 0){
+        state = new ftp_state();
+        state->cancel_transmission = false;
+        state->is_connection_open = false;
+        state->current_dir = "/";
+        state->is_guest = true;
+        state->username = "";
+        ftpServer->addState(client_fd, state);
+    }
     string response;
     string command_data(buffer_file_name);
-    server_manager.handle_ftp_command(&response, command_data);
+    server_manager.handle_ftp_command(&response, command_data,*state);
+    serverSocket->writeToSocket((char*)response.c_str(), args);
     cout << response << endl;
     /*
        ftpServer->openDataConnection(buffer_file_name, DOWNLOAD, args);
