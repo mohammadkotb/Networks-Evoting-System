@@ -87,7 +87,7 @@ bool CommandSupporter::mkdir(string path) {
   return system(("mkdir -p " + path).c_str()) == 0? true : false;
 }
 
-bool rm(string path) {
+bool CommandSupporter::rm(string path) {
   // given a path, check if it is a directory or a file
   // and remove it and return true if removal is done successfully
   // false otherwise
@@ -120,16 +120,4 @@ bool CommandSupporter::cd(string current_path, string arg) {
     return false;
   }
 }
-
-/*
-int main() {
-  cout << "Result:" << endl;
-  cout << ls("/home/mohammadkotb/test/");
-//  cout << "mkdir: " << mkdir("/home/mohammadkotb/test/tota/hamada") << endl;
-//  cout << "rm file: " << rm("/home/mohammadkotb/test/tota") << endl;
-  cout << cd("/home/mohammadkotb/test", "folder") << endl;
-  cout << cd("/home/mohammadkotb/test", "hamda") << endl;
-  return 0;
-}
-*/
 
