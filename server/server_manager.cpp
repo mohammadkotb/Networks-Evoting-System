@@ -5,19 +5,10 @@
 #include "server_manager.h"
 #include "ftp_command_parser.h"
 #include "command_support.h"
+#include "ftp_reply.h"
 
 using std::ifstream;
 using std::iostream;
-
-const char LIST[] = "LIST";
-const char PWD[] = "PWD";
-const char CWD[] = "CWD";
-const char MKD[] = "MKD";
-const char RMD[] = "RMD";
-const char BYE[] = "QUIT";
-const char RETR[] = "RETR";
-const char STOR[] = "STOR";
-const char PORT[] = "PORT";
 
 ServerManager::ServerManager(){
     pthread_mutex_init(&users_map_mutex, NULL);
@@ -56,22 +47,7 @@ void ServerManager::handle_request(string* response, const string& request_data)
     if (required_file_name == "/login.html") {
         prepare_response_from_file(response, string("../htdocs/login.html"),parameters);
     } else if(required_file_name == "/login.php") {
-        if (valid_user(request_data)) {
-            string username = get_request_parser.getParameter("username");
-            username = username.substr(1,username.length()-2);
-            string password = get_request_parser.getParameter("password");
-            password = password.substr(1,password.length()-2);
-            if (users_map_[get_request_parser.getParameter("username")].getType() == "\"voter\""){
-                parameters["FTP_LINK"] = "ftp://anonymous:" + username + "@localhost/";
-                prepare_response_from_file(response, string("../htdocs/voter_home.html"),parameters);
-            } else {
-                parameters["FTP_LINK"] = "ftp://" + username + ":" + password +
-                    "@localhost/" + username + "/";
-                prepare_response_from_file(response, string("../htdocs/candidate_home.html"),parameters);
-            }
-        } else {
-            prepare_response_from_file(response, string("../htdocs/invalid_data.html"),parameters);
-        }
+        handle_login(response, request_data);
     } else if (required_file_name == "/signup.html") {
         prepare_response_from_file(response, string("../htdocs/signup.html"),parameters);
     } else if (required_file_name == "/signup.php") {
@@ -88,6 +64,27 @@ void ServerManager::handle_request(string* response, const string& request_data)
     } else {
         ResponseCode code(NOT_FOUND);
         prepare_response_with_code(response, "../htdocs/404.html", code,parameters);
+    }
+}
+
+void ServerManager::handle_login(string* response, const string& request_data) {
+    HttpGetRequestParser get_request_parser(request_data);
+    map<string,string> parameters;
+    if (valid_user(request_data)) {
+        string username = get_request_parser.getParameter("username");
+        username = username.substr(1,username.length()-2);
+        string password = get_request_parser.getParameter("password");
+        password = password.substr(1,password.length()-2);
+        if (users_map_[get_request_parser.getParameter("username")].getType() == "\"voter\""){
+            parameters["FTP_LINK"] = "ftp://anonymous:" + username + "@localhost/";
+            prepare_response_from_file(response, string("../htdocs/voter_home.html"),parameters);
+        } else {
+            parameters["FTP_LINK"] = "ftp://" + username + ":" + password +
+                "@localhost/" + username + "/";
+            prepare_response_from_file(response, string("../htdocs/candidate_home.html"),parameters);
+        }
+    } else {
+        prepare_response_from_file(response, string("../htdocs/invalid_data.html"),parameters);
     }
 }
 
@@ -142,12 +139,16 @@ void ServerManager::handle_ftp_command(string* response, const string& command_d
         // Handle the list command
         *response = command_supporter.ls(body);
     } else if (head == MKD) {
-        *response = command_supporter.mkdir(body);
+        if (command_supporter.mkdir(body)) {
+            *response = COMMAND_OK;
+        } else {
+            *response = SYNTAX_ERROR;
+        }
     } else if (head == CWD) {
         // TODO: CHECK PARAMETERS WITH KOTB
         *response = command_supporter.cd(body, body);
     } else if (head == RMD) {
-        command_supporter.rm(body);
+        //command_supporter.rm(body);
     }
     // handle rest of commands here
 }
