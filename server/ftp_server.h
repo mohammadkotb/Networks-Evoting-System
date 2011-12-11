@@ -61,9 +61,6 @@ class FTPServer{
 		bool downloadFile(char *, int, void *);
 		bool uploadFile(char *, int, void *);
 
-		static void *downloadFile(void *);
-		static void *uploadFile(void *);
-		bool openDataConnection(char *, DataTransferType, void *);
 		void run();
 		void addState(int, ftp_state *);
 		void removeState(int);
