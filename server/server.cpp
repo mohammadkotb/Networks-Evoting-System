@@ -5,6 +5,7 @@
 #include "user.h"
 #include "http_get_request_parser.h"
 #include "server_manager.h"
+#include "ftp_server.h"
 
 using namespace std;
 
@@ -37,35 +38,88 @@ bool handle_web_request(void * args){
         for (;it != m->end();it++)
             cout << it->first << " = " << request.getParameter(it->first) << endl;
     }catch(int e){
-        return false;
+        cerr << "Error! Couldn't process the request correctly" << endl;
     }
     //=================================================
-    //close the connection after returning the required object
-	if(serverSocket->getConnectionType() == SOCK_STREAM) close(client_file_descriptor);
+    //since connection is not needed any more (HTTP 1.0) then we don't need to
+    //keep the connection so return false;
+    return false;
+}
+
+bool handle_ftp_request(void *args){
+    void **ar = (void **) args;
+    int client_fd = *((int *) ar[1]);
+    char *buffer_file_name = (char *) ar[2];
+    cerr << "RAW FTP REQUEST : " << buffer_file_name << endl;
+
+    struct ftp_state state;
+    //TODO: the state should be initialized using client commands: connect / login AND i need a
+    //message telling me whether the client is a candidate or a voter (to set the isGuest flag)
+    state.cancel_transmission = false;
+    state.is_connection_open = false;
+    state.current_dir = "/";
+    state.is_guest = true;
+    state.username = "";
+    //TODO: the addState should be called in response to "connect (or any other type of message)"
+    //command from the user
+    ftpServer->addState(client_fd, &state);
+
+    //TODO: the method should parse the request and respond with the proper response
+    /*
+       ftpServer->openDataConnection(buffer_file_name, DOWNLOAD, args);
+    */
+
     return true;
 }
 
-void start_server(){
-        ServerSocket serverSocket('T', 6060, 1024, 5, &handle_web_request);
+void * init_web_server(void * arg){
+    ServerSocket serverSocket('T', 6060, 1024, 5, &handle_web_request);
+    serverSocket.run(&serverSocket);
+}
+void *init_ftp_server(void * arg){
+    cerr << "starting ftp server" << endl;
+	ftpServer = new FTPServer(&handle_ftp_request);
+	ftpServer->run();
+	delete(ftpServer);
 
+	printf("terminated\n");
+}
+
+int main() {
+    //START WEB SERVER
 	pthread_t thrd;
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-
-	if(pthread_create(&thrd, NULL, serverSocket.run, (void *) &serverSocket)){
+	if(pthread_create(&thrd, NULL, init_web_server, (void *) 0)){
 		cerr << "Failed to create thread!";
 		pthread_exit(NULL);
 	}
 	pthread_attr_destroy(&attr);
+    //================
+    //START FTP SERVER
+	pthread_t thrd2;
+	pthread_attr_t attr2;
+	pthread_attr_init(&attr2);
+	pthread_attr_setdetachstate(&attr2, PTHREAD_CREATE_JOINABLE);
+
+	if(pthread_create(&thrd, NULL, init_ftp_server, (void *) 0)){
+		cerr << "Failed to create thread!";
+		pthread_exit(NULL);
+	}
+	pthread_attr_destroy(&attr2);
+    //==================
+    //join on the two threads
 
 	void *status;
 	if (pthread_join(thrd, &status)) {
 		cerr << "Error joining thread" << endl;
 	}
-}
+	void *status2;
+	if (pthread_join(thrd, &status2)) {
+		cerr << "Error joining thread" << endl;
+	}
 
-int main() {
-    start_server();
     return 0;
 }
+

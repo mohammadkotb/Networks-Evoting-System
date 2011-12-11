@@ -142,6 +142,7 @@ void FTPServer::run(){
 }
 
 //==========================================================================================================================================
+/*
 bool go_ftp_server(void *args){
 	void **ar = (void **) args;
 	int client_fd = *((int *) ar[1]);
@@ -171,7 +172,6 @@ bool go_ftp_server(void *args){
 	return true;
 }
 
-/*
 int main(){
 	cerr << "started" << endl;
 

@@ -107,15 +107,9 @@ int ServerSocket::getConnectionType(){
 	return this->connection_type;
 }
 
-bool ServerSocket::read_tcp(char buffer[], int client_file_descriptor){
+int ServerSocket::read_tcp(char buffer[], int client_file_descriptor){
 	memset(buffer, 0, bufferSize);
-	int data_size = read(client_file_descriptor, buffer, bufferSize - 1);
-	if (data_size < 0) {
-		cerr << "Error reading from socket." << endl;
-		return false;
-	}
-
-	return true;
+	return read(client_file_descriptor, buffer, bufferSize - 1);
 }
 
 bool ServerSocket::writeToSocket(char buffer[], void *args){
@@ -154,27 +148,34 @@ void ServerSocket::handleTCPRequest(void *args){
 	int socket_new_file_descriptor = *((int *) ar[1]);
 	char buffer[this->bufferSize]; //local variable for each thread, No syncronization needed
 
-	// block wait till the client sends its message
-	if(!read_tcp(buffer, socket_new_file_descriptor)){
-		cerr << "Error reading from buffer in tcp connection" << endl;
-		cerr << "Terminating request" << endl;
-		pthread_exit(NULL);
-	}
-
-	void *process_args[3];
-	process_args[0] = (void*) (ar[0]); //pointer to the ServerSocket object (this)
-	process_args[1] = (void*) (ar[1]); //client_socket_address (originally obtained from the accept() method)
-	process_args[2] = (void *) buffer;
-
-	// handle request
-	if(!(*process)(process_args)){
-		cerr << "Error! Couldn't process the request correctly" << endl;
-	}
+    void *process_args[3];
+    process_args[0] = (void*) (ar[0]); //pointer to the ServerSocket object (this)
+    process_args[1] = (void*) (ar[1]); //client_socket_address (originally obtained from the accept() method)
+    while (1){
+        // block wait till the client sends its message
+        int rc = read_tcp(buffer, socket_new_file_descriptor);
+        if(rc == 0){
+            cerr << "client closed connection" << endl;
+            pthread_exit(NULL);
+            break;
+        }else if (rc < 0){
+            cerr << "error reading from tcp connection" << endl;
+            pthread_exit(NULL);
+            break;
+        }
+        process_args[2] = (void*) buffer;
+        // handle request
+        if(!(*process)(process_args)){
+            //server process method chose not to keep the connection
+            cerr <<"closing connection" << endl;
+            break;
+        }
+    }
 
 	//free the arguements for this request, as it is terminating...
 	delete(ar);
 
-	// because we are implementing HTTTP 1.0 then we will always close the client's file descriptor after processing his ONLY request
+    //close the socket when tcp session finished
 	close(socket_new_file_descriptor);
 }
 
@@ -224,9 +225,7 @@ void ServerSocket::handleUDPRequest(void *args){
 	ar[2] = (void *) localBuffer;
 
 	// handle request
-	if(!(*process)(ar)){
-		cerr << "Error! Couldn't process the request correctly" << endl;
-	}
+	(*process)(ar);
 
 	//TODO:
 	// should the response be sent from the *process method? i think the response should be built in the server's process method
@@ -304,7 +303,7 @@ void * ServerSocket::run(void * args){
 	return NULL;
 }
 
-
+//=============================================================
 // example function for processing tcp requests
 bool go_tcp(void * args){
 	cerr << "الحمد لله رب العالمين" << endl;
