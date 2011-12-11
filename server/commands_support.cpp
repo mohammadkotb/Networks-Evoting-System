@@ -28,6 +28,7 @@ string CommandSupporter::ls(string directory) {
 
   if (dir != NULL) {
     stringstream ss; // create stringstream for getting data for the directory
+    bool first = true;
     while ((ent = readdir(dir)) != NULL) {
       char *file = ent->d_name;
 
@@ -48,6 +49,10 @@ string CommandSupporter::ls(string directory) {
         type = "file";
       }
 
+      if (!first) {
+          ss << endl;
+      }
+      first = false;
       ss << "0 0 0 0 ";
 
       // pushing size in case of file and 0 otherwise
@@ -73,7 +78,7 @@ string CommandSupporter::ls(string directory) {
       ss << file_name << " ";
 
       // pushing file type
-      ss << type << endl;
+      ss << type;
     }
     return ss.str();
   } else {
