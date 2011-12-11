@@ -31,6 +31,11 @@ string CommandSupporter::ls(string directory) {
     bool first = true;
     while ((ent = readdir(dir)) != NULL) {
       char *file = ent->d_name;
+      string file_name(file);
+
+      if (file_name == ".." || file_name == ".") {
+          continue;
+      }
 
       char file_path[200];
       memset(file_path, 0, sizeof(file_path));
@@ -74,7 +79,6 @@ string CommandSupporter::ls(string directory) {
       ss << mod_time << " ";
 
       // pushing file name
-      string file_name(file);
       ss << file_name;
 
       // pushing file type
