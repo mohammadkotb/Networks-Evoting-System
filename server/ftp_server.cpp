@@ -259,6 +259,7 @@ bool go_ftp_server(void *args){
 	return true; //keep connection!
 }
 
+/*
 int main(){
 	cerr << "started" << endl;
 
@@ -270,4 +271,5 @@ int main(){
 
 	return 0;
 }
+*/
 //*/
