@@ -119,7 +119,7 @@ VALIDATION_CODE ServerManager::can_add_user(const string& request_data) {
     }
     if(users_map_.count(username) == 0) {
         CommandSupporter command_supporter;
-        command_supporter.mkdir("lifemaker");
+        command_supporter.mkdir("../ftdocs/"+username);
         User new_user(type, username, password);
         users_map_[username] = new_user;
         pthread_mutex_unlock(&users_map_mutex);
