@@ -120,9 +120,11 @@ VALIDATION_CODE ServerManager::can_add_user(const string& request_data) {
         return WRONG_TYPE;
     }
     if(users_map_.count(username) == 0) {
-        CommandSupporter command_supporter;
-        command_supporter.mkdir("../ftdocs/"+username);
         User new_user(type, username, password);
+        if (new_user.getType() == "\"candidate\""){
+            CommandSupporter command_supporter;
+            command_supporter.mkdir("../ftdocs/"+username);
+        }
         users_map_[username] = new_user;
         pthread_mutex_unlock(&users_map_mutex);
         return VALID;

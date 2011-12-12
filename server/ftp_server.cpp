@@ -178,6 +178,8 @@ bool FTPServer::uploadFile(char *fileName, int control_fd, void *args){
         while(!(state->cancel_transmission) && ((n = read(client_fd, packet, bufSz)) > 0)){
                 total+=n;
                 fwrite(packet, 1, n, fout);
+                cout << "chunk" << endl;
+                sleep(3);
         }
 
         if (state->cancel_transmission)

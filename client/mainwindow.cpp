@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     //setup ui
     ui->setupUi(this);
-    ui->mainLayout->setContentsMargins(10,10,10,10);
+    //ui->mainLayout->setContentsMargins(10,10,10,10);
     //this->setCentralWidget(ui->verticalLayoutWidget);
     ui->passwordLineEdit->setEchoMode(QLineEdit::Password);
     QObject::connect(ui->goButton,SIGNAL(clicked()),SLOT(go()));
@@ -81,6 +81,11 @@ void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
     vector<FtpFile> files;
     //request file list
     ftpClient->list_files(&files,itemName.toStdString());
+    vector<QTreeWidgetItem*> children;
+    for (int i=0;i<item->childCount();i++)
+        children.push_back(item->child(i));
+    for (int i=0;i<children.size();i++)
+        item->removeChild(children[i]);
     //displaying files and folders
     for(unsigned int i=0;i<files.size();i++){
         FtpFile f = files[i];
