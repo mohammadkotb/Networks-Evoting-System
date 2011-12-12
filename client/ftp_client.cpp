@@ -1,9 +1,15 @@
 #include <iostream>
 
-using namespace std;
-
 #include "ftp_client.h"
 #include "ftp_list_parser.h"
+
+using namespace std;
+
+class FileInfo{
+    public:
+        string source;
+        string destination;
+};
 
 const char CONNECTION_TYPE = 'T';
 
@@ -62,19 +68,21 @@ void * download_aux(void *args){
     char file_name_buf[256];
     int client_fd;
 
-    string *ar = (string *) args;
+    FileInfo *f = (FileInfo*) args;
+    cout << "AAA " << f->source << " " << f->destination << endl;
     char args_local[1<<10];
-    strcpy(args_local, ((*ar) + " 1").c_str()); //1 for download, 0 for upload
-    sscanf(ar->c_str(), "%d %s", &client_fd, file_name_buf);
-    delete(ar);
+    strcpy(args_local, ((f->source) + " 1").c_str()); //1 for download, 0 for upload
+    sscanf(f->source.c_str(), "%d %s", &client_fd, file_name_buf);
 
     cerr << "Requesting file: " << file_name_buf << endl;
     dataSocket.writeToSocket(args_local);
 
 
     string stdDest(file_name_buf);
-    stdDest = ".." + stdDest;
+    //stdDest = ".." + stdDest;
+    stdDest = f->destination + stdDest;
     cout << "Downloading too : " << stdDest << endl;
+    delete(f);
 
     FILE *fout = fopen(stdDest.c_str(), "w");
 
@@ -96,7 +104,7 @@ void * download_aux(void *args){
     return NULL;
 }
 
-bool FtpClient::retrieve_file(const string& fileName) {
+bool FtpClient::retrieve_file(const string& fileName,const string & destination) {
     char file_name_buf[1<<8];
     //strcpy(file_name_buf, fileName.c_str());
     strcpy(file_name_buf, fileName.c_str());
@@ -125,9 +133,11 @@ bool FtpClient::retrieve_file(const string& fileName) {
             return false;
     }
 
-    string *arg = new string(string(response)+ " " + fileName);
+    FileInfo *f = new FileInfo();
+    f->source = string(string(response) + " " + fileName);
+    f->destination= string(destination);
     pthread_t thrd;
-    pthread_create(&thrd, NULL, download_aux, (void *) arg);
+    pthread_create(&thrd, NULL, download_aux, (void *) f);
 
     return true;
 }
