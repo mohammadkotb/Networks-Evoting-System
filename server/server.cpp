@@ -21,6 +21,7 @@ bool processFileTransfer(void *args){
         char fileName[1<<10];
         int transfer_type;
         sscanf(buffer, "%d %s %d", &client_control_fd, fileName, &transfer_type);
+        cout << "TRANS : " << buffer << endl;
         if(transfer_type == 0){ //upload
                 ftpServer->uploadFile(fileName, client_control_fd, args);
         } else if(transfer_type == 1){ //download

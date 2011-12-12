@@ -143,8 +143,12 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
     CommandSupporter command_supporter;
     if (head == LIST) {
         // Handle the list command
-        string username = state.username.substr(1,state.username.size()-2);
-        *response = command_supporter.ls("../ftdocs/" + username + body);
+        if (!state.is_guest){
+            string username = state.username.substr(1,state.username.size()-2);
+            *response = command_supporter.ls("../ftdocs/" + username + body);
+        }else{
+            *response = command_supporter.ls("../ftdocs" + body);
+        }
     } else if (head == MKD) {
         if (command_supporter.mkdir(body)) {
             *response = COMMAND_OK;
@@ -166,8 +170,13 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
             User u = users_map_[state.username];
             if (u.getPassword() != body)
                 *response = INVALID_AUTHENTICATION;
-            else
+            else{
+                if (u.getType() == "\"candidate\"")
+                    state.is_guest = false;
+                else
+                    state.is_guest = true;
                 *response = COMMAND_OK;
+            }
         }
     }else if (head == BYE){
         *response = "Bye";

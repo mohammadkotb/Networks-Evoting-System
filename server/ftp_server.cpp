@@ -85,11 +85,16 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
         cout << "HERE0" << endl;
 
         string temp(fileName);
-        string u = state->username;
-        u = u.substr(1,u.size()-2);
-        temp = "../ftdocs/" + u + temp;
-        cout << "FILE NAME = " << temp << endl;
+        if (!state->is_guest){
+            string u = state->username;
+            u = u.substr(1,u.size()-2);
+            temp = "../ftdocs/" + u + temp;
+        }else{
+            temp = "../ftdocs" + temp ;
+        }
+
         fileName = (char *) temp.c_str();
+        cout << "FILE NAME = " << temp << endl;
 
         state->is_connection_open = true;
 
@@ -141,11 +146,16 @@ bool FTPServer::uploadFile(char *fileName, int control_fd, void *args){
         dataServerSocket->writeToSocket((char*)"dummy",args);
 
         string temp(fileName);
-        string u = state->username;
-        u = u.substr(1,u.size()-2);
-        temp = "../ftdocs/" + u + temp;
-        cout << "FILE NAME = " << temp << endl;
+        if (!state->is_guest){
+            string u = state->username;
+            u = u.substr(1,u.size()-2);
+            temp = "../ftdocs/" + u + temp;
+        }else{
+            temp = "../ftdocs" + temp ;
+        }
+
         fileName = (char *) temp.c_str();
+        cout << "FILE NAME = " << temp << endl;
 
         int client_fd = *((int *) ar[1]);
 

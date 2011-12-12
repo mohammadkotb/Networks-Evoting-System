@@ -146,12 +146,14 @@ void * download_aux(void *args){
     sscanf(f->source.c_str(), "%d %s", &client_fd, file_name_buf);
 
     cerr << "Requesting file: " << file_name_buf << endl;
+    cerr << args_local << endl;
     dataSocket.writeToSocket(args_local);
 
-
+    cout << "GO TO SOCKET" << endl;
     string stdDest(file_name_buf);
-    //stdDest = ".." + stdDest;
-    stdDest = f->destination + stdDest;
+    int x = stdDest.rfind("/");
+    stdDest = f->destination + stdDest.substr(x,stdDest.length()-x);
+    cout << "F-DESTT " <<f->destination << endl;
     cout << "Downloading too : " << stdDest << endl;
     delete(f);
 
