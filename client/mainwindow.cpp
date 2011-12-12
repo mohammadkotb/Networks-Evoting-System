@@ -69,18 +69,14 @@ void MainWindow::ftpConnect(){
 
 void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
     QString itemName = item->data(0,Qt::UserRole).toString();
-    qDebug() << "fetching .. " << itemName;
     if (itemName[itemName.length()-1] != '/'){
         return;
     }
+    qDebug() << "fetching .. " << itemName;
     vector<FtpFile> files;
     //request file list
     ftpClient->list_files(&files,itemName.toStdString());
-    //parse the outcome
-    //...
-    //display the outcome
     //displaying files and folders
-    //first files
     for(unsigned int i=0;i<files.size();i++){
         FtpFile f = files[i];
         QTreeWidgetItem* it = new QTreeWidgetItem();
@@ -131,7 +127,7 @@ void MainWindow::downloadFile(){
     }
     qDebug() << info.absoluteFilePath();
     //downloading...
-    ftpClient->retrieve_file(remoteFile.toStdString());
+    ftpClient->retrieve_file(remoteFile.toStdString(),info.absoluteFilePath().toStdString());
 }
 
 void MainWindow::uploadFile(){

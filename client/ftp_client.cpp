@@ -1,9 +1,15 @@
 #include <iostream>
 
-using namespace std;
-
 #include "ftp_client.h"
 #include "ftp_list_parser.h"
+
+using namespace std;
+
+class FileInfo{
+    public:
+        string source;
+        string destination;
+};
 
 const char CONNECTION_TYPE = 'T';
 
@@ -57,53 +63,55 @@ bool FtpClient::remote_store(const string& filename) {
 }
 
 void * download_aux(void *args){
-    cout<<"IN AUX"<<endl;
-                ClientSocket dataSocket('T', 7071);
+    ClientSocket dataSocket('T', 7071);
 
-                char file_name_buf[256];
-                int client_fd;
+    char file_name_buf[256];
+    int client_fd;
 
-                string *ar = (string *) args;
-                char args_local[1<<10];
-                strcpy(args_local, ((*ar) + " 1").c_str()); //1 for download, 0 for upload
-                sscanf(ar->c_str(), "%d %s", &client_fd, file_name_buf);
-                delete(ar);
+    FileInfo *f = (FileInfo*) args;
+    cout << "AAA " << f->source << " " << f->destination << endl;
+    char args_local[1<<10];
+    strcpy(args_local, ((f->source) + " 1").c_str()); //1 for download, 0 for upload
+    sscanf(f->source.c_str(), "%d %s", &client_fd, file_name_buf);
 
-//                string r ("/home/amr/finalrepo/Networks-Evoting-System/test");
-                strcpy(file_name_buf, "/home/amr/finalrepo/Networks-Evoting-System/test2");
-                cerr << "Requesting file: " << file_name_buf << endl;
-                dataSocket.writeToSocket(args_local);
+    cerr << "Requesting file: " << file_name_buf << endl;
+    dataSocket.writeToSocket(args_local);
 
 
-                FILE *fout = fopen(file_name_buf, "w");
+    string stdDest(file_name_buf);
+    //stdDest = ".." + stdDest;
+    stdDest = f->destination + stdDest;
+    cout << "Downloading too : " << stdDest << endl;
+    delete(f);
 
-                int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
-                char packet[bufSz];
-                memset(packet,0,bufSz);
-                int n, total=0;
+    FILE *fout = fopen(stdDest.c_str(), "w");
 
-                while((n = dataSocket.readFromSocket(packet, bufSz))){
-                        total+=n;
-                        fwrite(packet, 1, n, fout);
-                }
+    int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
+    char packet[bufSz];
+    memset(packet,0,bufSz);
+    int n, total=0;
 
-                fclose(fout);
+    while((n = dataSocket.readFromSocket(packet, bufSz))){
+            total+=n;
+            fwrite(packet, 1, n, fout);
+    }
 
-                cerr << "total = " << 1.0*total/1000.0 << "Kbyte" << endl;
-                cerr << "File successfully received, thank God :)" << endl;
+    fclose(fout);
 
-                return NULL;
+    cerr << "total = " << 1.0*total/1000.0 << "Kbyte" << endl;
+    cerr << "File successfully received, thank God :)" << endl;
+
+    return NULL;
 }
 
-bool FtpClient::retrieve_file(const string& fileName) {
-    string other("/home/amr/finalrepo/Networks-Evoting-System/test");
+bool FtpClient::retrieve_file(const string& fileName,const string & destination) {
     char file_name_buf[1<<8];
     //strcpy(file_name_buf, fileName.c_str());
-    strcpy(file_name_buf, other.c_str());
+    strcpy(file_name_buf, fileName.c_str());
     cerr << "Requesting file: " << file_name_buf << endl;
     string download_command;
     //command_builder_.download_command(&download_command, fileName);
-    command_builder_.download_command(&download_command, other);
+    command_builder_.download_command(&download_command, fileName);
     client_socket_.writeToSocket((char*) download_command.c_str());
 
 //========================================================
@@ -125,9 +133,11 @@ bool FtpClient::retrieve_file(const string& fileName) {
             return false;
     }
 
-    string *arg = new string(string(response)+ " " + fileName);
+    FileInfo *f = new FileInfo();
+    f->source = string(string(response) + " " + fileName);
+    f->destination= string(destination);
     pthread_t thrd;
-    pthread_create(&thrd, NULL, download_aux, (void *) arg);
+    pthread_create(&thrd, NULL, download_aux, (void *) f);
 
     return true;
 }
