@@ -71,29 +71,32 @@ void * upload_aux(void *args){
     cerr << "Requesting file: " << file_name_buf << endl;
     dataSocket.writeToSocket(args_local);
 
+    // delete(f);
 
-    string stdDest(file_name_buf);
-    //stdDest = ".." + stdDest;
-    stdDest = f->destination + stdDest;
-    cout << "Downloading too : " << stdDest << endl;
-    delete(f);
+    FILE *fin = fopen(f->destination.c_str(), "r");
 
-    FILE *fout = fopen(stdDest.c_str(), "w");
+    // MOUSTAFA PASTE BIN
 
     int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
     char packet[bufSz];
     memset(packet,0,bufSz);
     int n, total=0;
 
-    while((n = dataSocket.readFromSocket(packet, bufSz))){
-            total+=n;
-            fwrite(packet, 1, n, fout);
-    }
+    if(!fin){
+              cerr << "Error! couldn't open the file: " << file_name_buf << endl;
+              // close(fd);
+              return false;
+      }
 
-    fclose(fout);
+      while((n=fread(packet, 1, bufSz, fin))){
+              dataSocket.writeToSocket(packet, n);
+      }
 
-    cerr << "total = " << 1.0*total/1000.0 << "Kbyte" << endl;
-    cerr << "File successfully received, thank God :)" << endl;
+      cerr << "closing file " << file_name_buf << endl;
+      if(fclose(fin)==EOF){
+              cerr << "Error! couldn't close the file: " << file_name_buf << endl;
+              return false;
+      }
 
     return NULL;
 }
