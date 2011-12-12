@@ -117,7 +117,7 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
         while(!(state->cancel_transmission) && (n=fread(packet, 1, bufSz, fin))){
                 dataServerSocket->writeToSocket(packet, n, args);
             cout << "CHUNK" << endl;
-            //sleep(5);
+            sleep(5);
         }
         if (state->cancel_transmission)
             cerr << "Transmission cancelled" << endl;

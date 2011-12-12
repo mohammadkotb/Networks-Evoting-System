@@ -135,7 +135,11 @@ void MainWindow::downloadFile(){
     }
     qDebug() << info.absoluteFilePath();
     //downloading...
-    ftpClient->retrieve_file(remoteFile.toStdString(),info.absoluteFilePath().toStdString());
+    bool canDownload =ftpClient->retrieve_file(remoteFile.toStdString(),info.absoluteFilePath().toStdString());
+    if (!canDownload){
+    QMessageBox::warning(this, tr("download Error"),
+       tr("please wait for current transmission to finish"));
+    }
 }
 
 void MainWindow::uploadFile(){

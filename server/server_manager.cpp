@@ -182,15 +182,27 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
         *response = "Bye";
         return false;
     } else if (head == RETR) {
+        int x;
+        if (state.is_connection_open)
+            x = -1;
+        else
+            x = state.clientfd;
+
         stringstream sin("");
-        sin << (state.clientfd);
+        sin << (x);
         string clientfd_str;
         sin >> clientfd_str;
         cout << "client fd @ server = " << clientfd_str << endl;
         *response = clientfd_str;
     }else if (head == STOR){
+        int x;
+        if (state.is_connection_open)
+            x = -1;
+        else
+            x = state.clientfd;
+
         stringstream sin("");
-        sin << (state.clientfd);
+        sin << (x);
         string clientfd_str;
         sin >> clientfd_str;
         cout << "client fd @ server = " << clientfd_str << endl;
