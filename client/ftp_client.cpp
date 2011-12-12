@@ -69,13 +69,17 @@ void * download_aux(void *args){
                 sscanf(ar->c_str(), "%d %s", &client_fd, file_name_buf);
                 delete(ar);
 
-//                string r ("/home/amr/finalrepo/Networks-Evoting-System/test");
-                strcpy(file_name_buf, "/home/amr/finalrepo/Networks-Evoting-System/test2");
+                //string r ("/home/amr/finalrepo/Networks-Evoting-System/test");
+                //strcpy(file_name_buf, "/home/ahmedkotb/Projects/c++/Networks-Evoting-System/test2");
                 cerr << "Requesting file: " << file_name_buf << endl;
                 dataSocket.writeToSocket(args_local);
 
 
-                FILE *fout = fopen(file_name_buf, "w");
+                char * destination;
+                string stdDest(file_name_buf);
+                stdDest = ".." + stdDest;
+                cout << "Downloading tooo : " << stdDest << endl;
+                FILE *fout = fopen(stdDest.c_str(), "w");
 
                 int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
                 char packet[bufSz];
@@ -96,14 +100,13 @@ void * download_aux(void *args){
 }
 
 bool FtpClient::retrieve_file(const string& fileName) {
-    string other("/home/amr/finalrepo/Networks-Evoting-System/test");
     char file_name_buf[1<<8];
     //strcpy(file_name_buf, fileName.c_str());
-    strcpy(file_name_buf, other.c_str());
+    strcpy(file_name_buf, fileName.c_str());
     cerr << "Requesting file: " << file_name_buf << endl;
     string download_command;
     //command_builder_.download_command(&download_command, fileName);
-    command_builder_.download_command(&download_command, other);
+    command_builder_.download_command(&download_command, fileName);
     client_socket_.writeToSocket((char*) download_command.c_str());
 
 //========================================================

@@ -83,14 +83,14 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
         ftp_state * state = getState(control_fd);
 
         cout << "HERE0" << endl;
-        /*
+
         string temp(fileName);
         string u = state->username;
-        u = u.substr(1,u.size()-1);
+        u = u.substr(1,u.size()-2);
         temp = "../ftdocs/" + u + temp;
-        cout << "FILE NAME + " << temp << endl;
+        cout << "FILE NAME = " << temp << endl;
         fileName = (char *) temp.c_str();
-        */
+
         state->is_connection_open = true;
 
         FILE *fin = fopen(fileName, "r");
