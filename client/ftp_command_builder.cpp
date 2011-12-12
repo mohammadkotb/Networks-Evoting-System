@@ -11,7 +11,11 @@ const char STOR[] = "STOR";
 const char PORT[] = "PORT";
 const char USER[] = "USER";
 const char PASS[] = "PASS";
+const char ABRT[] = "ABRT";
 
+void FtpCommandBuilder::abort_command (string * command){
+    *command = ABRT;
+}
 void FtpCommandBuilder::list_command(string* command,
     const string& remote_filespec) {
     *command = LIST;

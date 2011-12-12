@@ -217,7 +217,12 @@ bool FtpClient::retrieve_file(const string& fileName,const string & destination)
 }
 
 bool FtpClient::abort() {
-    return false;
+    string abort_command;
+    command_builder_.abort_command(&abort_command);
+    client_socket_.writeToSocket((char*)abort_command.c_str());
+    char response[1<<10];
+    client_socket_.readFromSocket(response,1 << 10 );
+    return true;
 }
 
 bool FtpClient::change_working_directory(const string& directory) {

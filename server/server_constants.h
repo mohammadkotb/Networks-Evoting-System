@@ -40,5 +40,6 @@ const char STOR[] = "STOR";
 const char PORT[] = "PORT";
 const char USER[] = "USER";
 const char PASS[] = "PASS";
+const char ABRT[] = "ABRT";
 
 #endif // FTP_REPLY_H

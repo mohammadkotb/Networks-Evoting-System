@@ -50,6 +50,7 @@ public slots:
     void ftpConnect();
     void ftpDisconnect();
     void makeDirectory();
+    void abort();
 
 private:
     Ui::MainWindow *ui;

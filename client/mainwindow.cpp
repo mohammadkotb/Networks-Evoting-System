@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     //setup ui
     ui->setupUi(this);
     ui->mainLayout->setContentsMargins(10,10,10,10);
-    this->setCentralWidget(ui->verticalLayoutWidget);
+    //this->setCentralWidget(ui->verticalLayoutWidget);
     ui->passwordLineEdit->setEchoMode(QLineEdit::Password);
     QObject::connect(ui->goButton,SIGNAL(clicked()),SLOT(go()));
     QObject::connect(ui->urlLineEdit,SIGNAL(returnPressed()),SLOT(go()));
@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     connect(ui->connectPushButton,SIGNAL(clicked()) ,SLOT(ftpConnect()));
     connect(ui->disconnectPushButton,SIGNAL(clicked()) ,SLOT(ftpDisconnect()));
     connect(ui->mkdirPushButton,SIGNAL(clicked()) ,SLOT(makeDirectory()));
+    connect(ui->abortPushButton,SIGNAL(clicked()) ,SLOT(abort()));
 
     //setup local and remote ftp trees
     QFileSystemModel *model = new QFileSystemModel();
@@ -39,6 +40,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     ui->remoteTreeWidget->addTopLevelItem(it);
 
     renderEngine = new GuiRenderer(ui->canvas->widget(),this);
+}
+
+void MainWindow::abort(){
+        ftpClient->abort();
 }
 
 void MainWindow::makeDirectory(){

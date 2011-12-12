@@ -87,6 +87,12 @@ public:
     // Updates the output parameter "command" with the properly formatted syntax
     // for the FTP PASS command.
     void password_command(string * command,const string& password);
+
+    //Syntax: ABRT
+
+    // Updates the output parameter "command" with the properly formatted syntax
+    // for the FTP PASS command.
+    void abort_command (string * command);
 };
 
 #endif // FTP_COMMAND_BUILDER_H

@@ -116,9 +116,11 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
         int n;
         while(!(state->cancel_transmission) && (n=fread(packet, 1, bufSz, fin))){
                 dataServerSocket->writeToSocket(packet, n, args);
-//		sleep(1);
+            cout << "CHUNK" << endl;
+            //sleep(5);
         }
-
+        if (state->cancel_transmission)
+            cerr << "Transmission cancelled" << endl;
         cout<<"HERE3"<<endl;
 
         cerr << "closing file " << fileName << endl;
@@ -177,6 +179,9 @@ bool FTPServer::uploadFile(char *fileName, int control_fd, void *args){
                 total+=n;
                 fwrite(packet, 1, n, fout);
         }
+
+        if (state->cancel_transmission)
+            cerr << "Transmission cancelled" << endl;
 
         if(n<0){
                 cerr << "Error receiving data from client!" << endl;
