@@ -7,6 +7,9 @@
 
 #define COMMAND_OK "200 Command okay"
 
+#define COMMAND_OK_VOTER "201 Command okay voter"
+#define COMMAND_OK_CANDIDATE "202 Command okay candidate"
+
 #define USER_NAME_OK "331 User name ok , need password"
 
 #define NOT_AUTHENTICATED "332 not authenticated"

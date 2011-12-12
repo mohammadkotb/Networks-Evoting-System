@@ -16,7 +16,7 @@ const char CONNECTION_TYPE = 'T';
 FtpClient::FtpClient(const string& hostname, int port)
     : client_socket_(CONNECTION_TYPE, port, (char *) hostname.c_str()) {}
 
-bool FtpClient::login(const string& username, const string& password) {
+int FtpClient::login(const string& username, const string& password) {
     string user_command;    // QUIT Syntax: QUIT
     command_builder_.user_command(&user_command, username);
     client_socket_.writeToSocket((char *)user_command.c_str());
@@ -33,15 +33,19 @@ bool FtpClient::login(const string& username, const string& password) {
         response = string(buffer_);
         response_parser_.parse_ftp_response(response);
         code = response_parser_.get_code();
-        if (code == 200) {
+        if (code == 201) {
             // valid username and password.
-            return true;
+                //voter
+            return 1;
+        } else if(code == 202){
+            // valid username and password.
+            return 2;
         } else {
-            return false;
+            return 0;
         }
     } else {
         // Invalid response.
-        return false;
+        return 0;
     }
 }
 

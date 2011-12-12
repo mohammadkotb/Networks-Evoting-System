@@ -66,7 +66,15 @@ void MainWindow::ftpConnect(){
         ftpClient = new FtpClient(ui->hostLineEdit->text().toStdString(),7070);
         QString username = "\"" + ui->usernameLineEdit->text() +  "\"";
         QString password = "\"" + ui->passwordLineEdit->text() +  "\"";
-        ftpClient->login(username.toStdString(),password.toStdString());
+        int res =ftpClient->login(username.toStdString(),password.toStdString());
+        if (res == 0){
+                QMessageBox::warning(this, tr("login Error"),
+                 tr("invalid username or password"));
+        }else if (res == 1){
+                ui->uploadButton->setDisabled(true);
+        }else if (res == 2){
+                ui->uploadButton->setEnabled(true);
+        }
     }catch(int e){
         qDebug() << "Can't connect to ftp server";
     }

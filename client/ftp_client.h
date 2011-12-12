@@ -23,7 +23,7 @@ public:
     FtpClient(const string& hostname, int port);
 
     // Login to FTP server using username and password.
-    bool login(const string& username, const string& password);
+    int login(const string& username, const string& password);
 
     // Sends a LIST command to the sever and retrieves the list of files in the
     // given directory.

@@ -173,11 +173,13 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
             if (u.getPassword() != body)
                 *response = INVALID_AUTHENTICATION;
             else{
-                if (u.getType() == "\"candidate\"")
+                if (u.getType() == "\"candidate\""){
                     state.is_guest = false;
-                else
+                    *response = COMMAND_OK_CANDIDATE;
+                }else{
                     state.is_guest = true;
-                *response = COMMAND_OK;
+                    *response = COMMAND_OK_VOTER;
+                }
             }
         }
     }else if (head == BYE){
