@@ -47,27 +47,25 @@ class FTPServer{
 		pthread_mutex_t states_mutex;
 		ServerSocket dataServerSocket;
 
-		void init(int, int, int, int, int, bool (*)(void*));
+                void init(int, int, int, int, int, bool (*)(void*), bool (*)(void*));
 //		bool downloadFile_aux(char *, void *);
 //		bool uploadFile_aux(char *, void *);
-		static bool processFileTransfer(void *);
+                // bool processFileTransfer(void *);
 
 	public:
-		FTPServer(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queueSize, bool (*)(void*));
-		FTPServer(bool (*)(void*));
+                FTPServer(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queueSize, bool (*)(void*), bool (*)(void*));
+                FTPServer(bool (*)(void*), bool (*)(void*));
 		void cancelTransmission();
 		bool getTransmitting();
 		int getDataBufferSize();
 		int getControlBufferSize();
-		bool downloadFile(char *, int, void *);
-		bool uploadFile(char *, int, void *);
+                bool downloadFile(char *, int, void *);
+                bool uploadFile(char *, int, void *);
 
 		void run();
 		void addState(int, ftp_state *);
 		void removeState(int);
                 ftp_state * getState(int);
 };
-
-static FTPServer *ftpServer;
 
 #endif /* FTPSERVER_H_ */
