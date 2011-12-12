@@ -71,6 +71,8 @@ void * upload_aux(void *args){
     cerr << "Requesting file: " << file_name_buf << endl;
     dataSocket.writeToSocket(args_local);
 
+    char dummy[1<<10];
+    dataSocket.readFromSocket(dummy, 1<<10);
     // delete(f);
 
     FILE *fin = fopen(f->destination.c_str(), "r");

@@ -137,6 +137,8 @@ bool FTPServer::uploadFile(char *fileName, int control_fd, void *args){
         ftp_state * state = this->getState(control_fd);
 
         state->is_connection_open = true;
+        ServerSocket* dataServerSocket = (ServerSocket *) ar[0];
+        dataServerSocket->writeToSocket((char*)"dummy",args);
 
         string temp(fileName);
         string u = state->username;
