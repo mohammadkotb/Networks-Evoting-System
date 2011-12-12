@@ -138,6 +138,13 @@ bool FTPServer::uploadFile(char *fileName, int control_fd, void *args){
 
         state->is_connection_open = true;
 
+        string temp(fileName);
+        string u = state->username;
+        u = u.substr(1,u.size()-2);
+        temp = "../ftdocs/" + u + temp;
+        cout << "FILE NAME = " << temp << endl;
+        fileName = (char *) temp.c_str();
+
         int client_fd = *((int *) ar[1]);
 
         FILE *fout = fopen(fileName, "w");

@@ -85,7 +85,10 @@ void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
         it->setText(0,qname);
         it->setText(1,QString::number(f.get_size()));
         if (f.get_type() == DIR_T){
+        if (qname[qname.length()-1] != '/')
             it->setData(0,Qt::UserRole,QVariant(itemName + qname + "/"));
+        else
+            it->setData(0,Qt::UserRole,QVariant(itemName + qname ));
             it->setIcon(0,QIcon("../imgs/dir.png"));
         }else if (f.get_type() == FILE_T){
             it->setData(0,Qt::UserRole,QVariant(itemName + qname));
@@ -162,6 +165,8 @@ void MainWindow::uploadFile(){
         return;
     }
     //do the uploading
+    string remote = remoteFolder.toStdString() + info.fileName().toStdString();
+    ftpClient->remote_store(remote,info.absoluteFilePath().toStdString());
 }
 
 
