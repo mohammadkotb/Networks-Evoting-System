@@ -30,8 +30,10 @@ class ClientSocket{
 		ClientSocket(char connection_type);
 		virtual ~ClientSocket();
 
-		int readFromSocket(char *, int);
+        int readFromSocket(char *, int);
+
 		int writeToSocket(char *);
+        int writeToSocket(char *,int);
 };
 
 #endif /* CLIENT_SOCKET_H_ */

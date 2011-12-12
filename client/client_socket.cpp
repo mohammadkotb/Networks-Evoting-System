@@ -100,6 +100,16 @@ int ClientSocket::writeToSocket(char *msg){
     return ret;
 }
 
+int ClientSocket::writeToSocket(char *msg,int n){
+    int ret=-1;
+    if(connection_type == SOCK_STREAM){
+        ret = write(socket_file_descriptor, msg, n);
+    } else if(connection_type == SOCK_DGRAM){
+        ret = sendto(socket_file_descriptor, msg, n, 0, (const struct sockaddr *)&server_address,sizeof(server_address));
+    }
+    return ret;
+}
+
 // client main
 /*
 int main(){
