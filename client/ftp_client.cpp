@@ -59,6 +59,7 @@ void FtpClient::list_files(vector<FtpFile>* files, const string& directory) {
 bool FtpClient::remote_store(const string& filename) {
     string store_command;
     command_builder_.upload_command(&store_command, filename);
+    client_socket_.writeToSocket((char *) store_command.c_str());
     return false;
 }
 
