@@ -180,7 +180,12 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
         cout << "client fd @ server = " << clientfd_str << endl;
         *response = clientfd_str;
     }else if (head == STOR){
-        *response = COMMAND_OK;
+        stringstream sin("");
+        sin << (state.clientfd);
+        string clientfd_str;
+        sin >> clientfd_str;
+        cout << "client fd @ server = " << clientfd_str << endl;
+        *response = clientfd_str;
     }
     return true;
     // handle rest of commands here

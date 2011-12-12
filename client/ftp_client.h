@@ -30,7 +30,7 @@ public:
     void list_files(vector<FtpFile>* files, const string& directory);
 
     // Initiate a server to server file transfer.
-    bool remote_store(const string& filename);
+    bool remote_store(const string& remote_filename, const string& source_filename);
 
     // Retrieves a named file from the server and writes it to the given OutputStream.
     bool retrieve_file(const string& remote, const string& destination);

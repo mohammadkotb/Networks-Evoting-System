@@ -56,11 +56,76 @@ void FtpClient::list_files(vector<FtpFile>* files, const string& directory) {
     parser.get_files(files);
 }
 
-bool FtpClient::remote_store(const string& filename) {
+void * upload_aux(void *args){
+    ClientSocket dataSocket('T', 7071);
+
+    char file_name_buf[256];
+    int client_fd;
+
+    FileInfo *f = (FileInfo*) args;
+    cout << "AAA " << f->source << " " << f->destination << endl;
+    char args_local[1<<10];
+    strcpy(args_local, ((f->source) + " 0").c_str()); //1 for download, 0 for upload
+    sscanf(f->source.c_str(), "%d %s", &client_fd, file_name_buf);
+
+    cerr << "Requesting file: " << file_name_buf << endl;
+    dataSocket.writeToSocket(args_local);
+
+
+    string stdDest(file_name_buf);
+    //stdDest = ".." + stdDest;
+    stdDest = f->destination + stdDest;
+    cout << "Downloading too : " << stdDest << endl;
+    delete(f);
+
+    FILE *fout = fopen(stdDest.c_str(), "w");
+
+    int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
+    char packet[bufSz];
+    memset(packet,0,bufSz);
+    int n, total=0;
+
+    while((n = dataSocket.readFromSocket(packet, bufSz))){
+            total+=n;
+            fwrite(packet, 1, n, fout);
+    }
+
+    fclose(fout);
+
+    cerr << "total = " << 1.0*total/1000.0 << "Kbyte" << endl;
+    cerr << "File successfully received, thank God :)" << endl;
+
+    return NULL;
+}
+
+bool FtpClient::remote_store(const string& remote_filename, const string& source_filename) {
     string store_command;
-    command_builder_.upload_command(&store_command, filename);
+    command_builder_.upload_command(&store_command, remote_filename);
     client_socket_.writeToSocket((char *) store_command.c_str());
-    return false;
+
+//========================================================
+    char response[1<<8];
+    client_socket_.readFromSocket(response, 1<<8);
+    cout << "THIS IS THE CLIENT FD: " << response;
+    int client_fd;
+    sscanf(response, "%d", &client_fd);
+    if(client_fd < 0){
+            if(client_fd==-1) {
+                    cerr << "You have to wait until you current file transfer is finished" << endl;
+            } else if(client_fd==-2){
+                    cerr << "Error! file not found" << endl;
+            } else if(client_fd < -2){
+                    cerr << "Unexpected error has occurred, please try again later!" << endl;
+            }
+            return false;
+    }
+    FileInfo *f = new FileInfo();
+    f->source = string(string(response) + " " + remote_filename);
+    f->destination= string(source_filename);
+    pthread_t thrd;
+    pthread_create(&thrd, NULL, upload_aux, (void *) f);
+
+    return true;
 }
 
 void * download_aux(void *args){
@@ -104,6 +169,7 @@ void * download_aux(void *args){
 
     return NULL;
 }
+
 
 bool FtpClient::retrieve_file(const string& fileName,const string & destination) {
     char file_name_buf[1<<8];
