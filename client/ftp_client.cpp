@@ -57,46 +57,43 @@ bool FtpClient::remote_store(const string& filename) {
 }
 
 void * download_aux(void *args){
-    cout<<"IN AUX"<<endl;
-                ClientSocket dataSocket('T', 7071);
+    ClientSocket dataSocket('T', 7071);
 
-                char file_name_buf[256];
-                int client_fd;
+    char file_name_buf[256];
+    int client_fd;
 
-                string *ar = (string *) args;
-                char args_local[1<<10];
-                strcpy(args_local, ((*ar) + " 1").c_str()); //1 for download, 0 for upload
-                sscanf(ar->c_str(), "%d %s", &client_fd, file_name_buf);
-                delete(ar);
+    string *ar = (string *) args;
+    char args_local[1<<10];
+    strcpy(args_local, ((*ar) + " 1").c_str()); //1 for download, 0 for upload
+    sscanf(ar->c_str(), "%d %s", &client_fd, file_name_buf);
+    delete(ar);
 
-                //string r ("/home/amr/finalrepo/Networks-Evoting-System/test");
-                //strcpy(file_name_buf, "/home/ahmedkotb/Projects/c++/Networks-Evoting-System/test2");
-                cerr << "Requesting file: " << file_name_buf << endl;
-                dataSocket.writeToSocket(args_local);
+    cerr << "Requesting file: " << file_name_buf << endl;
+    dataSocket.writeToSocket(args_local);
 
 
-                char * destination;
-                string stdDest(file_name_buf);
-                stdDest = ".." + stdDest;
-                cout << "Downloading tooo : " << stdDest << endl;
-                FILE *fout = fopen(stdDest.c_str(), "w");
+    string stdDest(file_name_buf);
+    stdDest = ".." + stdDest;
+    cout << "Downloading too : " << stdDest << endl;
 
-                int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
-                char packet[bufSz];
-                memset(packet,0,bufSz);
-                int n, total=0;
+    FILE *fout = fopen(stdDest.c_str(), "w");
 
-                while((n = dataSocket.readFromSocket(packet, bufSz))){
-                        total+=n;
-                        fwrite(packet, 1, n, fout);
-                }
+    int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
+    char packet[bufSz];
+    memset(packet,0,bufSz);
+    int n, total=0;
 
-                fclose(fout);
+    while((n = dataSocket.readFromSocket(packet, bufSz))){
+            total+=n;
+            fwrite(packet, 1, n, fout);
+    }
 
-                cerr << "total = " << 1.0*total/1000.0 << "Kbyte" << endl;
-                cerr << "File successfully received, thank God :)" << endl;
+    fclose(fout);
 
-                return NULL;
+    cerr << "total = " << 1.0*total/1000.0 << "Kbyte" << endl;
+    cerr << "File successfully received, thank God :)" << endl;
+
+    return NULL;
 }
 
 bool FtpClient::retrieve_file(const string& fileName) {
