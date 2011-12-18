@@ -190,26 +190,24 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
         if (state.is_connection_open)
             x = -1;
         else
-            x = state.clientfd;
+            x = state.port;
 
         stringstream sin("");
         sin << (x);
         string clientfd_str;
         sin >> clientfd_str;
-        cout << "client fd @ server = " << clientfd_str << endl;
         *response = clientfd_str;
     }else if (head == STOR){
         int x;
         if (state.is_connection_open)
             x = -1;
         else
-            x = state.clientfd;
+            x = state.port;
 
         stringstream sin("");
         sin << (x);
         string clientfd_str;
         sin >> clientfd_str;
-        cout << "client fd @ server = " << clientfd_str << endl;
         *response = clientfd_str;
     }else if (head == ABRT){
         state.cancel_transmission= true;

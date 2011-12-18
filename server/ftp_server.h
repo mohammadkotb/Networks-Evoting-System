@@ -19,6 +19,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::pair;
 
 const int defaultControlPort = 7070;
 const int defaultDataPort = 7071;
@@ -34,38 +35,38 @@ class ftp_state{
         bool is_connection_open;
         bool cancel_transmission;
         int clientfd;
+        int port;
+        unsigned long ip;
 };
 
 class FTPServer{
-	private:
-		int controlPortNumber;
-		int dataPortNumber;
-		int controlBufferSize;
-		int dataBufferSize;
-		std::map<int, ftp_state *> states;
-		ServerSocket controlServerSocket;
-		pthread_mutex_t states_mutex;
-		ServerSocket dataServerSocket;
+    private:
+        int controlPortNumber;
+        int dataPortNumber;
+        int controlBufferSize;
+        int dataBufferSize;
+        std::map<pair<int,long>, ftp_state *> states;
 
-                void init(int, int, int, int, int, bool (*)(void*), bool (*)(void*));
-//		bool downloadFile_aux(char *, void *);
-//		bool uploadFile_aux(char *, void *);
-                // bool processFileTransfer(void *);
+        ServerSocket controlServerSocket;
+        pthread_mutex_t states_mutex;
+        ServerSocket dataServerSocket;
 
-	public:
-                FTPServer(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queueSize, bool (*)(void*), bool (*)(void*));
-                FTPServer(bool (*)(void*), bool (*)(void*));
-		void cancelTransmission();
-		bool getTransmitting();
-		int getDataBufferSize();
-		int getControlBufferSize();
-                bool downloadFile(char *, int, void *);
-                bool uploadFile(char *, int, void *);
+        void init(int, int, int, int, int, bool (*)(void*), bool (*)(void*));
 
-		void run();
-		void addState(int, ftp_state *);
-		void removeState(int);
-                ftp_state * getState(int);
+    public:
+        FTPServer(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queueSize, bool (*)(void*), bool (*)(void*));
+        FTPServer(bool (*)(void*), bool (*)(void*));
+        void cancelTransmission();
+        bool getTransmitting();
+        int getDataBufferSize();
+        int getControlBufferSize();
+        bool downloadFile(char *,int, void *);
+        bool uploadFile(char *,int, void *);
+
+        void run();
+        void addState(int,unsigned long, ftp_state *);
+        void removeState(int,unsigned long);
+        ftp_state * getState(int,unsigned long);
 };
 
 #endif /* FTPSERVER_H_ */

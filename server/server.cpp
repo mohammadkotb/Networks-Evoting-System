@@ -15,19 +15,19 @@ FTPServer* ftpServer;
 
 bool processFileTransfer(void *args){
     cout << "IN PROCESS FILE" << endl;
-        void **ar = (void **) args;
-        char *buffer = (char *) ar[2];
-        int client_control_fd;
-        char fileName[1<<10];
-        int transfer_type;
-        sscanf(buffer, "%d %s %d", &client_control_fd, fileName, &transfer_type);
-        cout << "TRANS : " << buffer << endl;
-        if(transfer_type == 0){ //upload
-                ftpServer->uploadFile(fileName, client_control_fd, args);
-        } else if(transfer_type == 1){ //download
-                ftpServer->downloadFile(fileName, client_control_fd, args);
-        }
-        return false;
+    void **ar = (void **) args;
+    char *buffer = (char *) ar[2];
+    int state_port;
+    char fileName[1<<10];
+    int transfer_type;
+    sscanf(buffer, "%d %s %d", &state_port, fileName, &transfer_type);
+    cout << "TRANS : " << buffer << endl;
+    if(transfer_type == 0){ //upload
+        ftpServer->uploadFile(fileName,state_port, args);
+    } else if(transfer_type == 1){ //download
+        ftpServer->downloadFile(fileName,state_port, args);
+    }
+    return false;
 }
 
 bool handle_web_request(void * args){
@@ -70,10 +70,14 @@ bool handle_ftp_request(void *args){
 	ServerSocket *serverSocket = (ServerSocket *) ar[0];
     int client_fd = *((int *) ar[1]);
     char *buffer_file_name = (char *) ar[2];
+    sockaddr_in * addr = (sockaddr_in *) ar[3];
+
     cerr << "RAW FTP REQUEST : " << buffer_file_name << endl;
 
     ftp_state * state;
-    state = ftpServer->getState(client_fd);
+    cout << "port = " << addr->sin_port << endl;
+    cout << "ip = " <<  addr->sin_addr.s_addr << endl;
+    state = ftpServer->getState(addr->sin_port,addr->sin_addr.s_addr);
     if (state == 0){
         state = new ftp_state();
         state->cancel_transmission = false;
@@ -82,16 +86,15 @@ bool handle_ftp_request(void *args){
         state->is_guest = true;
         state->username = "";
         state->clientfd = client_fd;
-        ftpServer->addState(client_fd, state);
+        state->port = addr->sin_port;
+        state->ip = addr->sin_addr.s_addr;
+        ftpServer->addState(addr->sin_port,addr->sin_addr.s_addr, state);
     }
     string response;
     string command_data(buffer_file_name);
     bool keepConnection = server_manager.handle_ftp_command(&response, command_data,*state);
     serverSocket->writeToSocket((char*)response.c_str(), args);
     cout << response << endl;
-    /*
-       ftpServer->openDataConnection(buffer_file_name, DOWNLOAD, args);
-    */
 
     return keepConnection;
 }

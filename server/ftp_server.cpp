@@ -46,43 +46,32 @@ int FTPServer::getControlBufferSize(){
 	return this->controlBufferSize;
 }
 
-void FTPServer::addState(int fileDescriptor, ftp_state *state){
+void FTPServer::addState(int port,unsigned long ip, ftp_state *state){
 	pthread_mutex_lock(&states_mutex);
-	states[fileDescriptor] = state;
+	states[make_pair(port,ip)] = state;
 	pthread_mutex_unlock(&states_mutex);
 }
 
-void FTPServer::removeState(int fileDescriptor){
+void FTPServer::removeState(int port,unsigned long ip){
 	pthread_mutex_lock(&states_mutex);
-	states.erase(fileDescriptor);
+	states.erase(make_pair(port,ip));
 	pthread_mutex_unlock(&states_mutex);
 }
 
-ftp_state * FTPServer::getState(int fileDescriptor){
-    //cerr << "in getState" << endl;
-    cout << "final file descriptor: " << fileDescriptor << endl;
-    cout << "MAP SIZE: " << states.size() << endl;
-    for(map<int, ftp_state*>::iterator it = states.begin(); it != states.end() ; ++it){
-        cout << it->first << endl;
-        cout << it->second->username << endl;
-    }
-    if (states.find(fileDescriptor) == states.end())
+ftp_state * FTPServer::getState(int port,unsigned long ip){
+    if (states.find(make_pair(port,ip)) == states.end())
         return 0;
-    return states.find(fileDescriptor)->second;
+    return states.find(make_pair(port,ip))->second;
 }
 
-bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
-    cout << "In download file" << endl;
+bool FTPServer::downloadFile(char *fileName,int port, void *args){
         void **ar = (void **) args;
-        cout << "HERE-2" << endl;
         ServerSocket *dataServerSocket = (ServerSocket *) ar[0];
-        cout << "HERE-1" << endl;
-        cout << "contorl_fd @ server = " << control_fd << endl;
-        cout << "data_fd @ server = " << (*((int *) ar[1])) << endl;
+        sockaddr_in * client_address = (sockaddr_in*) ar[3];
         //cerr << "this.getDataBufferSize = " << ftpServer->getDataBufferSize() << endl;
-        ftp_state * state = getState(control_fd);
-
-        cout << "HERE0" << endl;
+        cout << "port = " << client_address->sin_port << endl;
+        cout << "ip = " <<  client_address->sin_addr.s_addr << endl;
+        ftp_state * state = getState(port,client_address->sin_addr.s_addr);
 
         string temp(fileName);
         if (!state->is_guest){
@@ -106,12 +95,10 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
                 return false;
         }
 
-        cout<<"HERE1"<<endl;
 //	int bufSz = dataServerSocket->getBufferSize();
         int bufSz = getDataBufferSize();
         char packet[bufSz];
 
-        cout<<"HERE2"<<endl;
 
         int n;
         while(!(state->cancel_transmission) && (n=fread(packet, 1, bufSz, fin))){
@@ -139,9 +126,11 @@ bool FTPServer::downloadFile(char *fileName, int control_fd, void *args){
         return true;
 }
 
-bool FTPServer::uploadFile(char *fileName, int control_fd, void *args){
+bool FTPServer::uploadFile(char *fileName,int port, void *args){
         void **ar = (void **) args;
-        ftp_state * state = this->getState(control_fd);
+        
+        sockaddr_in * client_address = (sockaddr_in*) ar[3];
+        ftp_state * state = getState(port,client_address->sin_addr.s_addr);
 
         state->is_connection_open = true;
         ServerSocket* dataServerSocket = (ServerSocket *) ar[0];

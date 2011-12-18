@@ -148,9 +148,10 @@ void ServerSocket::handleTCPRequest(void *args){
 	int socket_new_file_descriptor = *((int *) ar[1]);
 	char buffer[this->bufferSize]; //local variable for each thread, No syncronization needed
 
-    void *process_args[3];
+    void *process_args[4];
     process_args[0] = (void*) (ar[0]); //pointer to the ServerSocket object (this)
-    process_args[1] = (void*) (ar[1]); //client_socket_address (originally obtained from the accept() method)
+    process_args[1] = (void*) (ar[1]); // socket_file descriptor
+    process_args[3] = (void*) (ar[2]); //client_socket_address (originally obtained from the accept() method)
     while (1){
         // block wait till the client sends its message
     	memset(buffer, 0, sizeof(buffer));
@@ -174,6 +175,7 @@ void ServerSocket::handleTCPRequest(void *args){
 
 	//free the arguements for this request, as it is terminating...
     delete((int *)ar[1]);
+    delete((sockaddr_in*)ar[2]);
 	delete(ar);
 
     //close the socket when tcp session finished
@@ -203,10 +205,12 @@ bool ServerSocket::handleTcpConnection() {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 
-		void **args = new void*[2];
+		void **args = new void*[3];
+        sockaddr_in * client_address_p = (sockaddr_in *) malloc(sizeof(sockaddr_in));
+        *client_address_p = client_address;
 		args[0] = (void*)this;
-//		args[1] = (void*) &socket_new_file_descriptor;
 		args[1] = (void *) new int(socket_new_file_descriptor);
+		args[2] = (void *) client_address_p;
 
 		if(pthread_create(&thrd, NULL, playThread, (void *)args)){
 			cerr << "Failed to create thread!";
