@@ -143,6 +143,16 @@ bool ServerSocket::writeToSocket(char buffer[], int size, void *args){
 	return success;
 }
 
+int ServerSocket::readFromSocket(char * buffer,int buffsize,void * args){
+	void **ar = (void **) args;
+	int client_file_descriptor = *((int *) ar[1]);
+    if (this->connection_type == SOCK_STREAM){
+        return read(client_file_descriptor,buffer,buffsize);
+    }else{
+        //TODO: udpcode here
+    }
+}
+
 void ServerSocket::handleTCPRequest(void *args){
 	void **ar = (void **) args;
 	int socket_new_file_descriptor = *((int *) ar[1]);
