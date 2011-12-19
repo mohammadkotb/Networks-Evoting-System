@@ -79,6 +79,8 @@ class ServerSocket{
 		// writes STRINGS ONLY to socket regardless of connection type (tcp/udp)
 		bool writeToSocket(char *, void *);
 
+		int readFromSocket(char *,int, void *);
+
 		// writes to socket regardless of connection type (tcp/udp)
 		bool writeToSocket(char *, int, void *);
 

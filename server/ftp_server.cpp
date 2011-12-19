@@ -110,8 +110,9 @@ bool FTPServer::downloadFile(char *fileName,int port, void *args){
             cerr << "Transmission cancelled" << endl;
 
         //TODO:: remove this line
-        //this just sends a dummy packet so if the client was blocking
+        //this just sends a dummy packet so if the udp client was blocked
         //it can continue by writing empty string to file and exiting the loop
+        //as the number of written bytes will be n=0
         dataServerSocket->writeToSocket((char *)"", args);
 
         cout<<"HERE3"<<endl;
@@ -170,7 +171,7 @@ bool FTPServer::uploadFile(char *fileName,int port, void *args){
 
         int n, total=0;
 
-        while(!(state->cancel_transmission) && ((n = read(client_fd, packet, bufSz)) > 0)){
+        while(!(state->cancel_transmission) && ((n = dataServerSocket->readFromSocket(packet, bufSz,args)) > 0)){
                 total+=n;
                 fwrite(packet, 1, n, fout);
                 cout << "chunk" << endl;
