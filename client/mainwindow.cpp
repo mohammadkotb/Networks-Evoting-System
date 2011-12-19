@@ -298,7 +298,7 @@ void MainWindow::go(){
 
     ClientSocket * socket;
     try{
-        socket = new ClientSocket('T',6060,server_name);
+        socket = new ClientSocket('U',6060,server_name);
     }catch(int e){
         qDebug() << "couldn't connect to server";
         builder.build("<p>couldn't connect to server</p>");

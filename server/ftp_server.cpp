@@ -26,8 +26,8 @@ void FTPServer::init(int control_port_no, int data_port_no, int control_buffer_s
 	this->dataBufferSize = data_buffer_size;
 	pthread_mutex_init(&states_mutex, NULL);
 
-	this->controlServerSocket = ServerSocket('T', controlPortNumber, controlBufferSize, queueSize, process_fn);
-        this->dataServerSocket = ServerSocket('T', dataPortNumber, dataBufferSize, queueSize, data_process);
+	this->controlServerSocket = ServerSocket('U', controlPortNumber, controlBufferSize, queueSize, process_fn);
+    this->dataServerSocket = ServerSocket('U', dataPortNumber, dataBufferSize, queueSize, data_process);
 }
 
 FTPServer::FTPServer(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queue_size, bool(*process_fn)(void*), bool(*process_data)(void*)){
@@ -95,27 +95,33 @@ bool FTPServer::downloadFile(char *fileName,int port, void *args){
                 return false;
         }
 
-//	int bufSz = dataServerSocket->getBufferSize();
         int bufSz = getDataBufferSize();
         char packet[bufSz];
 
 
         int n;
         while(!(state->cancel_transmission) && (n=fread(packet, 1, bufSz, fin))){
-                dataServerSocket->writeToSocket(packet, n, args);
+            dataServerSocket->writeToSocket(packet, n, args);
             cout << "CHUNK" << endl;
             sleep(5);
         }
+
         if (state->cancel_transmission)
             cerr << "Transmission cancelled" << endl;
+
+        //TODO:: remove this line
+        //this just sends a dummy packet so if the client was blocking
+        //it can continue by writing empty string to file and exiting the loop
+        dataServerSocket->writeToSocket((char *)"", args);
+
         cout<<"HERE3"<<endl;
 
         cerr << "closing file " << fileName << endl;
         if(fclose(fin)==EOF){
-                cerr << "Error! couldn't close the file: " << fileName << endl;
-                state->is_connection_open = false;
-                state->cancel_transmission = false;
-                return false;
+            cerr << "Error! couldn't close the file: " << fileName << endl;
+            state->is_connection_open = false;
+            state->cancel_transmission = false;
+            return false;
         }
 
         cout<<"HERE4"<<endl;

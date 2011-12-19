@@ -100,7 +100,7 @@ bool handle_ftp_request(void *args){
 }
 
 void * init_web_server(void * arg){
-    ServerSocket serverSocket('T', 6060, 1024, 5, &handle_web_request);
+    ServerSocket serverSocket('U', 6060, 1024, 5, &handle_web_request);
     serverSocket.run(&serverSocket);
 }
 void *init_ftp_server(void * arg){

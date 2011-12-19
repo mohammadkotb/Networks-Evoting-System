@@ -11,7 +11,7 @@ class FileInfo{
         string destination;
 };
 
-const char CONNECTION_TYPE = 'T';
+const char CONNECTION_TYPE = 'U';
 
 FtpClient::FtpClient(const string& hostname, int port)
     : client_socket_(CONNECTION_TYPE, port, (char *) hostname.c_str()) {}
@@ -61,7 +61,7 @@ void FtpClient::list_files(vector<FtpFile>* files, const string& directory) {
 }
 
 void * upload_aux(void *args){
-    ClientSocket dataSocket('T', 7071);
+    ClientSocket dataSocket('U', 7071);
 
     char file_name_buf[256];
     int client_fd;
@@ -138,7 +138,7 @@ bool FtpClient::remote_store(const string& remote_filename, const string& source
 }
 
 void * download_aux(void *args){
-    ClientSocket dataSocket('T', 7071);
+    ClientSocket dataSocket('U', 7071);
 
     char file_name_buf[256];
     int client_fd;
