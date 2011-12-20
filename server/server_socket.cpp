@@ -266,9 +266,12 @@ void ServerSocket::handleUDPRequest(void *args){
             break;
     }
     cout << "Connection Closed" << endl;
+
     //TODO:
     //free args
-    //XXX: caused a memory map error
+    delete((int *)ar[1]);
+    delete(cl_copy);
+    delete(ar);
 }
 
 // Sets the server for UDP connection.
@@ -293,7 +296,8 @@ bool ServerSocket::handleUDPConnection() {
 		}
         int port = client_address.sin_port;
         unsigned long ip = client_address.sin_addr.s_addr;
-        cout << "SOCK : " << socket_file_descriptor << " ROW SOCK DATA : " << data_buffer << endl;  
+        //cout << "SOCK : " << socket_file_descriptor << " ROW SOCK DATA : " << data_buffer << endl;  
+        cout << "SOCK : " << socket_file_descriptor << " GOT new data" << endl;
 
         //check if this a new client or an old client
         if (mutex_map.count(make_pair(port,ip)) == 0){
@@ -342,7 +346,6 @@ bool ServerSocket::handleUDPConnection() {
             strcpy(thread_buffer, data_buffer);
             buffers_lengths_map[make_pair(port,ip)] = data_size;
             pthread_mutex_unlock(thread_mutex);
-            cout << "DONE OLD CLIENT" << endl;
         }
 	}
 
