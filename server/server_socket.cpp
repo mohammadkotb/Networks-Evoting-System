@@ -158,9 +158,7 @@ int ServerSocket::readFromSocket(char * buffer,int buffsize,void * args){
         int port = client_address->sin_port;
         unsigned long ip = client_address->sin_addr.s_addr;
         pthread_mutex_t * mutex = mutex_map[make_pair(port,ip)];
-        cout << "Sk waiting for lock" << endl;
         pthread_mutex_lock(mutex);
-        cout << "Sk granted for lock" << endl;
         char * result = buffers_map[make_pair(port,ip)];
         strcpy(buffer,result);
         cout << "SOCK (port,ip) : " << port << "," << ip << endl;
@@ -310,19 +308,18 @@ bool ServerSocket::handleUDPConnection() {
 		}
         int port = client_address.sin_port;
         unsigned long ip = client_address.sin_addr.s_addr;
-        cout << "port = " << port << endl;
-        cout << "ip = " <<  ip << endl;
         cout << "SOCK : " << socket_file_descriptor << " ROW SOCK DATA : " << data_buffer << endl;  
 
         //check if this a new client or an old client
         if (mutex_map.count(make_pair(port,ip)) == 0){
             //new client
-            cout << "NEW CLIENT" << endl;
+            cout << "NEW CLIENT (port,ip) " << port << " , "  << ip << endl;
             pthread_t thrd;
             pthread_attr_t attr;
             pthread_attr_init(&attr);
 
-            void *args[4];
+            //void *args[4]; //XXX:THIS LINE WAS A DISASTER
+            void **args = new void*[4];
             sockaddr_in * client_address_p = (sockaddr_in *) malloc(sizeof(sockaddr_in));
             *client_address_p = client_address;
             args[0] = (void *)this;
@@ -352,8 +349,8 @@ bool ServerSocket::handleUDPConnection() {
             }
             pthread_attr_destroy(&attr);
         }else{
-            cout << "OLD CLIENT" << endl;
             //old client 
+            cout << "OLD CLIENT (port,ip) " << port << " , "  << ip << endl;
             //signal the waiting mutex on the old thread
             pthread_mutex_t * thread_mutex = mutex_map[make_pair(port,ip)];
             char * thread_buffer = buffers_map[make_pair(port,ip)];

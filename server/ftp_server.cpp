@@ -134,6 +134,7 @@ bool FTPServer::uploadFile(char *fileName,int port, void *args){
         void **ar = (void **) args;
         
         sockaddr_in * client_address = (sockaddr_in*) ar[3];
+
         ftp_state * state = getState(port,client_address->sin_addr.s_addr);
 
         state->is_connection_open = true;
@@ -173,7 +174,10 @@ bool FTPServer::uploadFile(char *fileName,int port, void *args){
                 total+=n;
                 fwrite(packet, 1, n, fout);
                 cout << "chunk" << endl;
+                sleep(3);
+                cout << "wakeup" << endl;
         }
+
         cout << "Upload Complete" << endl;
 
         if (state->cancel_transmission)
