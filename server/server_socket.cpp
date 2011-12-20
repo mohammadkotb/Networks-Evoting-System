@@ -151,9 +151,6 @@ int ServerSocket::readFromSocket(char * buffer,int buffsize,void * args){
     if (this->connection_type == SOCK_STREAM){
         ret = read(client_file_descriptor,buffer,buffsize);
     }else{
-        //sockaddr_in client_address;
-        //socklen_t client_len = sizeof(client_address);
-		//ret = recvfrom(client_file_descriptor, buffer, buffsize-1, 0, (sockaddr *) &client_address, &client_len);
         sockaddr_in * client_address = (sockaddr_in *) ar[3];
         int port = client_address->sin_port;
         unsigned long ip = client_address->sin_addr.s_addr;
@@ -161,10 +158,7 @@ int ServerSocket::readFromSocket(char * buffer,int buffsize,void * args){
         pthread_mutex_lock(mutex);
         char * result = buffers_map[make_pair(port,ip)];
         strcpy(buffer,result);
-        cout << "SOCK (port,ip) : " << port << "," << ip << endl;
-        cout << "SOCK READ : " << result << endl;
         int len = buffers_lengths_map[make_pair(port,ip)];
-        cout << "SOCK LEN : " << len << endl;
         ret = len;
     }
     return ret;
@@ -251,10 +245,6 @@ bool ServerSocket::handleTcpConnection() {
 
 void ServerSocket::handleUDPRequest(void *args){
 	void **ar = (void **) args;
-	//char *globalBuffer = (char *) ar[2];
-	//char localBuffer[this->bufferSize];
-	//strcpy(localBuffer, globalBuffer);
-	//pthread_mutex_unlock(&buf_udp_mutex);
 
     sockaddr_in * client_address = (sockaddr_in *) ar[3];
     int port = client_address->sin_port;
@@ -265,20 +255,15 @@ void ServerSocket::handleUDPRequest(void *args){
     //load the localBuffer
     char * localBuffer = buffers_map[make_pair(port,ip)];
     while (true){
-        cout << "loop port = " << port << endl;
-        cout << "loop ip = " << ip << endl;
         //wait till some one signals the lock
-        cout << "Waiting for lock" << endl;
         pthread_mutex_lock(mutex);
-        cout << "lock granted" << endl;
         
         ar[2] = (void *) localBuffer;
         ar[3] = (void *) cl_copy;
         // handle request
         bool keepConnection = (*process)(ar);
-        if (!keepConnection){
+        if (!keepConnection)
             break;
-        }
     }
     cout << "Connection Closed" << endl;
     //TODO:
