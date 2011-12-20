@@ -3,6 +3,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::make_pair;
 
 bool ServerSocket::setupServer(){
 	// Create a new socket with the socket system call.
@@ -144,13 +145,31 @@ bool ServerSocket::writeToSocket(char buffer[], int size, void *args){
 }
 
 int ServerSocket::readFromSocket(char * buffer,int buffsize,void * args){
+    int ret = -1;
 	void **ar = (void **) args;
 	int client_file_descriptor = *((int *) ar[1]);
     if (this->connection_type == SOCK_STREAM){
-        return read(client_file_descriptor,buffer,buffsize);
+        ret = read(client_file_descriptor,buffer,buffsize);
     }else{
-        //TODO: udpcode here
+        //sockaddr_in client_address;
+        //socklen_t client_len = sizeof(client_address);
+		//ret = recvfrom(client_file_descriptor, buffer, buffsize-1, 0, (sockaddr *) &client_address, &client_len);
+        sockaddr_in * client_address = (sockaddr_in *) ar[3];
+        int port = client_address->sin_port;
+        unsigned long ip = client_address->sin_addr.s_addr;
+        pthread_mutex_t * mutex = mutex_map[make_pair(port,ip)];
+        cout << "Sk waiting for lock" << endl;
+        pthread_mutex_lock(mutex);
+        cout << "Sk granted for lock" << endl;
+        char * result = buffers_map[make_pair(port,ip)];
+        strcpy(buffer,result);
+        cout << "SOCK (port,ip) : " << port << "," << ip << endl;
+        cout << "SOCK READ : " << result << endl;
+        int len = buffers_lengths_map[make_pair(port,ip)];
+        cout << "SOCK LEN : " << len << endl;
+        ret = len;
     }
+    return ret;
 }
 
 void ServerSocket::handleTCPRequest(void *args){
@@ -234,15 +253,39 @@ bool ServerSocket::handleTcpConnection() {
 
 void ServerSocket::handleUDPRequest(void *args){
 	void **ar = (void **) args;
-	char *globalBuffer = (char *) ar[2];
-	char localBuffer[this->bufferSize];
-	strcpy(localBuffer, globalBuffer);
-	pthread_mutex_unlock(&buf_udp_mutex);
+	//char *globalBuffer = (char *) ar[2];
+	//char localBuffer[this->bufferSize];
+	//strcpy(localBuffer, globalBuffer);
+	//pthread_mutex_unlock(&buf_udp_mutex);
 
-	ar[2] = (void *) localBuffer;
-
-	// handle request
-	(*process)(ar);
+    sockaddr_in * client_address = (sockaddr_in *) ar[3];
+    int port = client_address->sin_port;
+    unsigned long ip = client_address->sin_addr.s_addr;
+    pthread_mutex_t * mutex = mutex_map[make_pair(port,ip)];
+    sockaddr_in *cl_copy = (sockaddr_in *) malloc(sizeof(sockaddr_in));
+    *cl_copy = *client_address ;
+    //load the localBuffer
+    char * localBuffer = buffers_map[make_pair(port,ip)];
+    while (true){
+        cout << "loop port = " << port << endl;
+        cout << "loop ip = " << ip << endl;
+        //wait till some one signals the lock
+        cout << "Waiting for lock" << endl;
+        pthread_mutex_lock(mutex);
+        cout << "lock granted" << endl;
+        
+        ar[2] = (void *) localBuffer;
+        ar[3] = (void *) cl_copy;
+        // handle request
+        bool keepConnection = (*process)(ar);
+        if (!keepConnection){
+            break;
+        }
+    }
+    cout << "Connection Closed" << endl;
+    //TODO:
+    //free args
+    //XXX: caused a memory map error
 }
 
 // Sets the server for UDP connection.
@@ -255,7 +298,7 @@ bool ServerSocket::handleUDPConnection() {
 
 	while (1) {
 		// Initialize data_buffer to zero.
-		pthread_mutex_lock(&buf_udp_mutex);
+		//pthread_mutex_lock(&buf_udp_mutex);
 		memset(data_buffer, 0, bufferSize);
 
 		// Reads kBufferSize - 1 bytes into the data_buffer.
@@ -265,22 +308,60 @@ bool ServerSocket::handleUDPConnection() {
 			cerr << "Unable to receive data!" << endl;
 			return false;
 		}
+        int port = client_address.sin_port;
+        unsigned long ip = client_address.sin_addr.s_addr;
+        cout << "port = " << port << endl;
+        cout << "ip = " <<  ip << endl;
+        cout << "SOCK : " << socket_file_descriptor << " ROW SOCK DATA : " << data_buffer << endl;  
 
-		pthread_t thrd;
-		pthread_attr_t attr;
-		pthread_attr_init(&attr);
+        //check if this a new client or an old client
+        if (mutex_map.count(make_pair(port,ip)) == 0){
+            //new client
+            cout << "NEW CLIENT" << endl;
+            pthread_t thrd;
+            pthread_attr_t attr;
+            pthread_attr_init(&attr);
 
-		void *args[4];
-		args[0] = (void *)this;
-		args[1] = (void *) &socket_file_descriptor;
-		args[2] = (void *) data_buffer;
-		args[3] = (void *) &client_address;
+            void *args[4];
+            sockaddr_in * client_address_p = (sockaddr_in *) malloc(sizeof(sockaddr_in));
+            *client_address_p = client_address;
+            args[0] = (void *)this;
+            //XXX: this number will always be constant (since udp use one
+            //socket) but kept for the sake of consistency
+            args[1] = (void *) new int(socket_file_descriptor);
+            //XXX: no need for this as each thread will have its buffer
+            //in the buffers array but kept for consistency
+            args[2] = (void *) data_buffer;
+            args[3] = (void *) client_address_p;
+            
+            //Create records of this thread
+            //1- save record in mutex_map and init the mutex
+            mutex_map[make_pair(port,ip)] = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
+            pthread_mutex_init(mutex_map[make_pair(port,ip)],NULL);
+            //2- create new buffer for the connection and copy the data to it
+            char * thread_buffer = new char[udpBufferSize];
+            buffers_map[make_pair(port,ip)] = thread_buffer;
+            strcpy(thread_buffer, data_buffer);
+            //3- set the length of msg
+            buffers_lengths_map[make_pair(port,ip)] = data_size;
 
-		if(pthread_create(&thrd, NULL, playThread, (void *)args)){
-			cerr << "Failed to create thread!";
-			return false;
-		}
-		pthread_attr_destroy(&attr);
+            //4-start the new thread
+            if(pthread_create(&thrd, NULL, playThread, (void *)args)){
+                cerr << "Failed to create thread!";
+                return false;
+            }
+            pthread_attr_destroy(&attr);
+        }else{
+            cout << "OLD CLIENT" << endl;
+            //old client 
+            //signal the waiting mutex on the old thread
+            pthread_mutex_t * thread_mutex = mutex_map[make_pair(port,ip)];
+            char * thread_buffer = buffers_map[make_pair(port,ip)];
+            strcpy(thread_buffer, data_buffer);
+            buffers_lengths_map[make_pair(port,ip)] = data_size;
+            pthread_mutex_unlock(thread_mutex);
+            cout << "DONE OLD CLIENT" << endl;
+        }
 	}
 
 	pthread_mutex_destroy(&buf_udp_mutex);

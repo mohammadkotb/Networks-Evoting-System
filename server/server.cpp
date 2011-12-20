@@ -73,10 +73,10 @@ bool handle_ftp_request(void *args){
     sockaddr_in * addr = (sockaddr_in *) ar[3];
 
     cerr << "RAW FTP REQUEST : " << buffer_file_name << endl;
+    cout << "FTP port = " << addr->sin_port<< endl;
+    cout << "FTP ip = " << addr->sin_addr.s_addr<< endl;
 
     ftp_state * state;
-    cout << "port = " << addr->sin_port << endl;
-    cout << "ip = " <<  addr->sin_addr.s_addr << endl;
     state = ftpServer->getState(addr->sin_port,addr->sin_addr.s_addr);
     if (state == 0){
         state = new ftp_state();

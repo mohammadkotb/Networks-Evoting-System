@@ -68,9 +68,6 @@ bool FTPServer::downloadFile(char *fileName,int port, void *args){
         void **ar = (void **) args;
         ServerSocket *dataServerSocket = (ServerSocket *) ar[0];
         sockaddr_in * client_address = (sockaddr_in*) ar[3];
-        //cerr << "this.getDataBufferSize = " << ftpServer->getDataBufferSize() << endl;
-        cout << "port = " << client_address->sin_port << endl;
-        cout << "ip = " <<  client_address->sin_addr.s_addr << endl;
         ftp_state * state = getState(port,client_address->sin_addr.s_addr);
 
         string temp(fileName);
@@ -155,7 +152,7 @@ bool FTPServer::uploadFile(char *fileName,int port, void *args){
         fileName = (char *) temp.c_str();
         cout << "FILE NAME = " << temp << endl;
 
-        int client_fd = *((int *) ar[1]);
+        //int client_fd = *((int *) ar[1]);
 
         FILE *fout = fopen(fileName, "w");
         if(!fout){
@@ -171,12 +168,13 @@ bool FTPServer::uploadFile(char *fileName,int port, void *args){
 
         int n, total=0;
 
+        cout << "Waiting for file packets to come" << endl;
         while(!(state->cancel_transmission) && ((n = dataServerSocket->readFromSocket(packet, bufSz,args)) > 0)){
                 total+=n;
                 fwrite(packet, 1, n, fout);
                 cout << "chunk" << endl;
-                sleep(3);
         }
+        cout << "Upload Complete" << endl;
 
         if (state->cancel_transmission)
             cerr << "Transmission cancelled" << endl;

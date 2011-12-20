@@ -17,6 +17,7 @@
 #include <iostream> // For cout and endl.
 #include <stdlib.h>
 #include <time.h>
+#include <map>
 
 const int kSinZeroSize = 8; // sin_zero size
 const int maxBufferSize = 1<<20; // Maximum size of the data buffer.
@@ -24,6 +25,7 @@ const int defaultBufferSize = 1024; // Default size of the data buffer.
 const int defaultQueueSize = 5; // Default Queue size
 const int maxQueueSize = 100; //Maximum Queue Size
 const int defaultPortNumber = 80; // Default port number
+const int udpBufferSize = 1024;
 
 class ServerSocket{
 	private:
@@ -62,6 +64,18 @@ class ServerSocket{
 
 		// pointer to server function that process client requests
 		bool (*process)(void *);
+
+        //============================================
+        //Reliable UDP variables
+
+        //udp mutex map
+        std::map<std::pair<int,unsigned long>,pthread_mutex_t *> mutex_map;
+
+        //udp buffer map
+        std::map<std::pair<int,unsigned long>,char *> buffers_map;
+
+        //udp received message length map
+        std::map<std::pair<int,unsigned long>,int> buffers_lengths_map;
 
 	public:
 		// Constructors

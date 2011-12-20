@@ -78,6 +78,7 @@ void * upload_aux(void *args){
     char dummy[1<<10];
     dataSocket.readFromSocket(dummy, 1<<10);
     // delete(f);
+    cout << "Dummy Message Received" << endl;
 
     FILE *fin = fopen(f->destination.c_str(), "r");
 
@@ -94,9 +95,14 @@ void * upload_aux(void *args){
               return false;
       }
 
+      sleep(1);
       while((n=fread(packet, 1, bufSz, fin))){
-              dataSocket.writeToSocket(packet, n);
+          dataSocket.writeToSocket(packet, n);
+          sleep(2);
       }
+      //TODO::REMOVE THIS
+      //send dummy line
+      dataSocket.writeToSocket((char*)"",0);
 
       cerr << "closing file " << file_name_buf << endl;
       if(fclose(fin)==EOF){
@@ -171,6 +177,7 @@ void * download_aux(void *args){
     while((n = dataSocket.readFromSocket(packet, bufSz))){
             total+=n;
             fwrite(packet, 1, n, fout);
+            cout << "chunk" << endl;
     }
 
     fclose(fout);
