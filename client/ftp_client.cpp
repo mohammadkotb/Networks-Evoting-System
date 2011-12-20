@@ -85,6 +85,9 @@ void * upload_aux(void *args){
     // MOUSTAFA PASTE BIN
 
     int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
+    //udp buffer size @ server is 1024 so client must send with the same
+    //rate in order not to overflow the server
+    bufSz = 1024;
     char packet[bufSz];
     memset(packet,0,bufSz);
     int n, total=0;
