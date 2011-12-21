@@ -36,7 +36,6 @@ class ServerSocket{
 		int socket_file_descriptor; // used for storing the values returned by the socket system call and the accept system call.
 		sockaddr_in server_address; // Server address.
 		bool running; // indicates whether this thread is running or not yet
-		pthread_mutex_t buf_udp_mutex;
 
 		// Initialize server socket
 		bool init(char connection_type, int port_no, int buffer_size, int queueSize, bool (*)(void*));
@@ -76,6 +75,9 @@ class ServerSocket{
 
         //udp received message length map
         std::map<std::pair<int,unsigned long>,int> buffers_lengths_map;
+
+        //udp sync maps (sync bit for each client)
+        std::map<std::pair<int,unsigned long>,bool> sync_map;
 
 	public:
 		// Constructors

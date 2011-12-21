@@ -1,4 +1,11 @@
 #include "client_socket.h" // Header file for server_socket
+#include "packet.h"
+#include "bernoulli_trial.h"
+#include <sys/time.h>
+#include <cerrno>
+
+#define PACKET_LOSS_PROBABILITY 0
+#define PACKET_TIMEOUT 3000
 
 using std::cout;
 using std::cerr;
@@ -48,6 +55,9 @@ bool ClientSocket::init(char connection_type, int server_port_number, char *serv
         }
     }
 
+    //lastSyncBit initialized to true so on the first use it will be inverted to false
+    lastSyncBit = true;
+
     return true;
 }
 
@@ -91,7 +101,7 @@ int ClientSocket::readFromSocket(char buf[], int buffer_size){
 }
 
 int ClientSocket::writeToSocket(char *msg){
-    return writeToSocket(msg,strlen(msg));
+    return writeToSocket(msg,strlen(msg)+1);
 }
 
 int ClientSocket::writeToSocket(char *msg,int n){
@@ -99,12 +109,80 @@ int ClientSocket::writeToSocket(char *msg,int n){
     if(connection_type == SOCK_STREAM){
         ret = write(socket_file_descriptor, msg, n);
     } else if(connection_type == SOCK_DGRAM){
-        ret = sendto(socket_file_descriptor, msg, n, 0, (const struct sockaddr *)&server_address,sizeof(server_address));
+        //unreliable
+        //ret = sendto(socket_file_descriptor, msg, n, 0, (const struct sockaddr *)&server_address,sizeof(server_address));
+        //reliable connection over udp
+        ret = reliableUdpSend(msg,n);
     }
     return ret;
 }
 
-int recvfrom_timeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec){
+int ClientSocket::reliableUdpSend(char* buffer,int length){
+    //0 - create a new packet with syncbit = invertion the last one used
+    //1 - send the packet (if bernoulli says ok :) )
+    //2 - while not timeout (wait for the correct ACK packet)
+    //3 - if timeout go to step 1 else, we are done
+    //--------
+    //0
+    bool sync = !lastSyncBit;
+    bool done = false;
+    Packet packet(false,sync,false,buffer,length);
+    while (!done){
+        BernoulliTrial bt(PACKET_LOSS_PROBABILITY);
+        //1
+        bool packet_lost = bt.shouldDoIt();
+        if (!packet_lost){
+            cout << "PACKET: "<< sync << " sent" << endl;
+            int ret = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
+                    (const struct sockaddr *)&server_address,sizeof(server_address));
+            //an error occured couldn't send the packet
+            if (ret < 0)
+                return ret;
+        }else
+            cout << "PACKET: "<< sync << " not sent" << endl;
+            
+        //2
+        bool correctACK = false;
+        int timeout = PACKET_TIMEOUT;
+        struct timeval start,end;
+        while (!correctACK){
+            //wait for ACK (ack size is very small (2bytes))
+            char data[10];
+            unsigned int sz = sizeof(sender_address);
+            gettimeofday(&start,NULL);
+            int ackret = recvfromTimeout(socket_file_descriptor,(char*)data,10,
+                    (struct sockaddr*)&sender_address,&sz,timeout);
+            gettimeofday(&end,NULL);
+
+            if (ackret == -1){
+                //3- timeout , resend packet
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    break;
+                else
+                    return ackret;  //other error
+            }
+            //check packet
+            Packet ackPacket(data,ackret);
+            if (ackPacket.isAck() && ackPacket.getSyncBit() == sync){
+                cout << "ACK packet received" << endl;
+                //we are done
+                correctACK = true;
+                done = true;
+            }else{
+                int delta = (end.tv_sec*1000 + end.tv_usec/1000) -
+                    (start.tv_sec*1000 + start.tv_usec/1000);
+                timeout -= delta;
+                //3- timeout , resend packet
+                if (timeout <= 0) break;
+            }
+        }
+        if (!correctACK)
+            cout << "PACKET: "<< sync << " time out" << endl;
+    }
+    lastSyncBit = sync;
+}
+
+int ClientSocket::recvfromTimeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec){
     struct timeval t;
     t.tv_sec = msec/1000;
     t.tv_usec = msec%1000;

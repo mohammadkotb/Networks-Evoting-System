@@ -1,4 +1,9 @@
 #include "server_socket.h" // Header file for server_socket
+#include "packet.h" // Header file for packet class
+#include "bernoulli_trial.h" // Header file for BernoulliTrial class
+
+#define PACKET_LOSS_PROBABILITY 0
+#define PACKET_TIMEOUT 3000
 
 using std::cout;
 using std::cerr;
@@ -42,7 +47,7 @@ bool ServerSocket::init(char connection_type, int port_no, int buffer_size, int 
 
 	this->port_num = port_no;
 	this->process = process_fn;
-	pthread_mutex_init(&buf_udp_mutex, NULL);
+
 	//@amr: if port number is < 2000, it will be valid, OK?
 	valid &= (port_no > 0 && port_no < (1<<16));
 
@@ -281,6 +286,7 @@ bool ServerSocket::handleUDPConnection() {
 	char data_buffer[bufferSize];
 	int data_size;
 	cerr << "Waiting for UDP requests" << endl;
+    BernoulliTrial bernoulli(PACKET_LOSS_PROBABILITY);
 
 	while (1) {
 		// Initialize data_buffer to zero.
@@ -290,19 +296,51 @@ bool ServerSocket::handleUDPConnection() {
 		// Reads kBufferSize - 1 bytes into the data_buffer.
 		// Updates the client_address with the senders address.
 		data_size = recvfrom(socket_file_descriptor, data_buffer, bufferSize-1, 0, (sockaddr *) &client_address, &client_len);
+        cout << "-------------------------------------------------" << endl;
 		if (data_size < 0) {
 			cerr << "Unable to receive data!" << endl;
 			return false;
 		}
         int port = client_address.sin_port;
         unsigned long ip = client_address.sin_addr.s_addr;
-        //cout << "SOCK : " << socket_file_descriptor << " ROW SOCK DATA : " << data_buffer << endl;  
-        cout << "SOCK : " << socket_file_descriptor << " GOT new data" << endl;
+        Packet packet(data_buffer,data_size);
+        cout << "SOCK : " << socket_file_descriptor << " GOT new packet" << endl;
+        cout << "PACKET : " << packet.getSyncBit() << " Received" << endl;
 
         //check if this a new client or an old client
         if (mutex_map.count(make_pair(port,ip)) == 0){
             //new client
             cout << "NEW CLIENT (port,ip) " << port << " , "  << ip << endl;
+            if (packet.isAck() || packet.isDisconnect()){
+                //corrupt packet since receiver don't get ACK packets or
+                //(disconnect packet for the first time)
+                //send ACK with the last bit (1 in this case) since new client
+                //is waiting for zero
+                //TODO:: send the ack packet
+                //int ds = sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
+                //       0, (struct sockaddr *) &client_address, sizeof(client_address));
+                continue;
+            }
+
+            bool sync = packet.getSyncBit();
+            //send ack packet
+            Packet ackPacket(true,sync,false,(char*)"",0);
+            if (!bernoulli.shouldDoIt()){
+                sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
+                        0, (struct sockaddr *) &client_address, sizeof(client_address));
+                cout << "PACKET : Ack message Sent" << endl;
+            }else{
+                cout << "PACKET : Ack message Lost" << endl;
+            }
+
+            if (sync == true){
+                //unsynchronized packet .. new client is expecting a 0 sync
+                //packet so discard packet
+                cout << "PACKET : unsynced , discarded" << endl;
+                continue;
+            }
+
+            
             pthread_t thrd;
             pthread_attr_t attr;
             pthread_attr_init(&attr);
@@ -317,7 +355,7 @@ bool ServerSocket::handleUDPConnection() {
             args[1] = (void *) new int(socket_file_descriptor);
             //XXX: no need for this as each thread will have its buffer
             //in the buffers array but kept for consistency
-            args[2] = (void *) data_buffer;
+            //args[2] = (void *) data_buffer;
             args[3] = (void *) client_address_p;
             
             //Create records of this thread
@@ -327,9 +365,9 @@ bool ServerSocket::handleUDPConnection() {
             //2- create new buffer for the connection and copy the data to it
             char * thread_buffer = new char[udpBufferSize];
             buffers_map[make_pair(port,ip)] = thread_buffer;
-            strcpy(thread_buffer, data_buffer);
+            strcpy(thread_buffer, packet.getData());
             //3- set the length of msg
-            buffers_lengths_map[make_pair(port,ip)] = data_size;
+            buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
 
             //4-start the new thread
             if(pthread_create(&thrd, NULL, playThread, (void *)args)){
@@ -340,16 +378,45 @@ bool ServerSocket::handleUDPConnection() {
         }else{
             //old client 
             cout << "OLD CLIENT (port,ip) " << port << " , "  << ip << endl;
+            if (packet.isDisconnect()){
+                //TODO:handle disconnect mechanism
+                continue;
+            }
+            if (packet.isAck()){
+                //corrupt packet since receiver don't receive ACK packets
+                //TODO:send ack packet with last bit
+                continue;
+            }
+
+            int expectedSyncBit = !sync_map[make_pair(port,ip)];
+            //send ack packet
+            Packet ackPacket(true,packet.getSyncBit(),false,(char*)"",0);
+            if (!bernoulli.shouldDoIt()){
+                sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
+                        0, (struct sockaddr *) &client_address, sizeof(client_address));
+                cout << "PACKET : Ack message Sent" << endl;
+            }else{
+                cout << "PACKET : Ack message Lost" << endl;
+            }
+
+            if (expectedSyncBit != packet.getSyncBit()){
+                //unsynchronized packet .. discard it
+                cout << "PACKET : unsynced , discarded" << endl;
+                continue;
+            }
+
+            //invert the sync bit
+            sync_map[make_pair(port,ip)] = expectedSyncBit;
+
             //signal the waiting mutex on the old thread
             pthread_mutex_t * thread_mutex = mutex_map[make_pair(port,ip)];
             char * thread_buffer = buffers_map[make_pair(port,ip)];
-            strcpy(thread_buffer, data_buffer);
-            buffers_lengths_map[make_pair(port,ip)] = data_size;
+            strcpy(thread_buffer, packet.getData());
+            buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
             pthread_mutex_unlock(thread_mutex);
         }
 	}
 
-	pthread_mutex_destroy(&buf_udp_mutex);
 	return true;
 }
 

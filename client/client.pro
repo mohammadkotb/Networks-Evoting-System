@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     test_main.cpp \
     ftp_file_parser.cpp \
     ftp_client.cpp \
-    ftp_response_parser.cpp
+    ftp_response_parser.cpp \
+    packet.cpp \
+    bernoulli_trial.cpp
 
 HEADERS  += mainwindow.h \
     gui_renderer.h \
@@ -36,9 +38,14 @@ HEADERS  += mainwindow.h \
     ftp_file_parser.h \
     ftp_list_parser.h \
     ftp_client.h \
-    ftp_response_parser.h
+    ftp_response_parser.h \
+    packet.h \
+    bernoulli_trial.h
 
 FORMS    += mainwindow.ui
+
+
+
 
 
 

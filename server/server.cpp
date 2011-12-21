@@ -37,8 +37,9 @@ bool handle_web_request(void * args){
 	int client_file_descriptor = *((int *) ar[1]);
 	char *buffer = (char *) ar[2];
     //=================================================
-    cout << "===========================" << endl;
-	cout << "raw data : " << buffer << endl;
+    //cout << "===========================" << endl;
+	//cout << "raw data : " << buffer << endl;
+    
     //TODO:: optimize this (copy the whole buffer into string)
     string data(buffer);
     try{
@@ -49,6 +50,8 @@ bool handle_web_request(void * args){
         writable[response.size()] = '\0';
         //@Moustafa: please change to const char * instead of char *
         serverSocket->writeToSocket(&writable[0], args);
+
+        /*
         HttpGetRequestParser request(data);
         cout << "Required file : " << request.getRequiredFileName() << endl;
         map<string,string> *m = request.getParameters();
@@ -56,6 +59,8 @@ bool handle_web_request(void * args){
         cout << "parameters : " << endl;
         for (;it != m->end();it++)
             cout << it->first << " = " << request.getParameter(it->first) << endl;
+        */
+
     }catch(int e){
         cerr << "Error! Couldn't process the request correctly" << endl;
     }
@@ -73,8 +78,8 @@ bool handle_ftp_request(void *args){
     sockaddr_in * addr = (sockaddr_in *) ar[3];
 
     cerr << "RAW FTP REQUEST : " << buffer_file_name << endl;
-    cout << "FTP port = " << addr->sin_port<< endl;
-    cout << "FTP ip = " << addr->sin_addr.s_addr<< endl;
+    //cout << "FTP port = " << addr->sin_port<< endl;
+    //cout << "FTP ip = " << addr->sin_addr.s_addr<< endl;
 
     ftp_state * state;
     state = ftpServer->getState(addr->sin_port,addr->sin_addr.s_addr);
@@ -105,10 +110,9 @@ void * init_web_server(void * arg){
 }
 void *init_ftp_server(void * arg){
     cerr << "starting ftp server" << endl;
-        ftpServer = new FTPServer(&handle_ftp_request, &processFileTransfer);
+    ftpServer = new FTPServer(&handle_ftp_request, &processFileTransfer);
 	ftpServer->run();
 	delete(ftpServer);
-
 	printf("terminated\n");
 }
 

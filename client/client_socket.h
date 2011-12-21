@@ -25,10 +25,19 @@ class ClientSocket{
 
 		bool init(char, int, char *);
 
+        //-----------------------------
+        //reliable udp
+
         //a recvfrom method that will timeout after the given millisec
         //value , upon time out a -1 will be returned and errno will be set to
         //EAGAIN or EWOULDBLOCK
         int recvfromTimeout(int,char*,int,struct sockaddr*,socklen_t*,int millisec);
+
+        //used to alternate packet sync numbers
+        bool lastSyncBit;
+
+        //reliable send method
+        int reliableUdpSend(char* buffer,int length);
 
 	public:
 		ClientSocket(char connection_type, int server_port_number);

@@ -3,22 +3,6 @@
 
 using namespace std;
 
-//bool processFileTransfer(void *args){
-//    cout << "IN PROCESS FILE" << endl;
-//        void **ar = (void **) args;
-//        char *buffer = (char *) ar[2];
-//        int client_control_fd;
-//        char fileName[1<<10];
-//        int transfer_type;
-//        sscanf(buffer, "%d %s %d", &client_control_fd, fileName, &transfer_type);
-//        if(transfer_type == 0){ //upload
-//                uploadFile(fileName, client_control_fd, args);
-//        } else if(transfer_type == 1){ //download
-//                downloadFile(fileName, client_control_fd, args);
-//        }
-//        return false;
-//}
-
 void FTPServer::init(int control_port_no, int data_port_no, int control_buffer_size, int data_buffer_size, int queueSize, bool (*process_fn)(void*), bool (*data_process)(void*)){
 	this->controlPortNumber = control_port_no;
 	this->dataPortNumber = data_port_no;
