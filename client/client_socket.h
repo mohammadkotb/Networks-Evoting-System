@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <time.h>
 
 class ClientSocket{
 	private:
@@ -23,6 +24,11 @@ class ClientSocket{
 		int client_id;
 
 		bool init(char, int, char *);
+
+        //a recvfrom method that will timeout after the given millisec
+        //value , upon time out a -1 will be returned and errno will be set to
+        //EAGAIN or EWOULDBLOCK
+        int recvfromTimeout(int,char*,int,struct sockaddr*,socklen_t*,int millisec);
 
 	public:
 		ClientSocket(char connection_type, int server_port_number);

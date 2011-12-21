@@ -91,13 +91,7 @@ int ClientSocket::readFromSocket(char buf[], int buffer_size){
 }
 
 int ClientSocket::writeToSocket(char *msg){
-    int ret=-1;
-    if(connection_type == SOCK_STREAM){
-        ret = write(socket_file_descriptor, msg, strlen(msg));
-    } else if(connection_type == SOCK_DGRAM){
-        ret = sendto(socket_file_descriptor, msg, strlen(msg), 0, (const struct sockaddr *)&server_address,sizeof(server_address));
-    }
-    return ret;
+    return writeToSocket(msg,strlen(msg));
 }
 
 int ClientSocket::writeToSocket(char *msg,int n){
@@ -110,6 +104,17 @@ int ClientSocket::writeToSocket(char *msg,int n){
     return ret;
 }
 
+int recvfrom_timeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec){
+    struct timeval t;
+    t.tv_sec = msec/1000;
+    t.tv_usec = msec%1000;
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&t, sizeof(t)))
+        return -1;
+    int recv_count = recvfrom(socket_fd,buff,bufflen,0,client,client_len);
+    return recv_count;
+}
+
+//------------------------------------------------------------------------
 // client main
 /*
 int main(){
