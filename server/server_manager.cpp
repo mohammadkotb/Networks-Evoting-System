@@ -227,3 +227,19 @@ void ServerManager::addVote(string username){
     votes_map[username] = votes_map[username] + 1;
     pthread_mutex_unlock(&votes_map_mutex);
 }
+
+string ServerManager::show_elections_results() {
+    stringstream html;
+    html << "<html>";
+    html << "<head></head>";
+    html << "<body>";
+    map<string,int>::iterator itr;
+    for (itr = votes_map.begin(); itr != votes_map.end(); itr++) {
+        html << "<p>";
+        html << (*itr).first << ": ";
+        html << (*itr).second << " votes." << "</p>";
+    }
+    html << "</body>";
+    html << "</html>";
+    return html.str();
+}

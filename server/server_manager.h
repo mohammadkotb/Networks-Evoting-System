@@ -2,6 +2,7 @@
 #define SERVER_MANAGER_H
 
 #include <string>
+#include <sstream>
 #include <map>
 #include "http_get_request_parser.h"
 #include "http_response_builder.h"
@@ -74,6 +75,8 @@ private:
     // add a vote to a candidate using his username 
     void addVote(string username);
 
+    // dynamically generating show elections results for users
+    string show_elections_results();
 };
 
 #endif // SERVER_MANAGER_H
