@@ -67,7 +67,9 @@ void ServerManager::handle_request(string* response, const string& request_data)
         } else {
             prepare_response_from_file(response, WRONG_TYPE_HTML, parameters);
         }
-    } else {
+    } else if(required_file_name == "/results.html") {
+            show_elections_results(response);
+    }else {
         ResponseCode code(NOT_FOUND);
         prepare_response_with_code(response, NOTFOUND_HTML, code,parameters);
     }
@@ -228,11 +230,14 @@ void ServerManager::addVote(string username){
     pthread_mutex_unlock(&votes_map_mutex);
 }
 
-string ServerManager::show_elections_results() {
+void ServerManager::show_elections_results(string* response) {
     stringstream html;
     html << "<html>";
     html << "<head></head>";
     html << "<body>";
+    // For testing
+    // votes_map["amr"] = 100;
+    // votes_map["kotb"] = 1000;
     map<string,int>::iterator itr;
     for (itr = votes_map.begin(); itr != votes_map.end(); itr++) {
         html << "<p>";
@@ -241,5 +246,5 @@ string ServerManager::show_elections_results() {
     }
     html << "</body>";
     html << "</html>";
-    return html.str();
+    *response = html.str();
 }

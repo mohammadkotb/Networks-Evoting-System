@@ -76,7 +76,7 @@ private:
     void addVote(string username);
 
     // dynamically generating show elections results for users
-    string show_elections_results();
+    void show_elections_results(string* response);
 };
 
 #endif // SERVER_MANAGER_H
