@@ -1,6 +1,10 @@
 #include "server_socket.h" // Header file for server_socket
 #include "packet.h" // Header file for packet class
 #include "bernoulli_trial.h" // Header file for BernoulliTrial class
+#include <sys/time.h>
+#include <cerrno>
+#include <pthread.h>
+#include "mutex_timer.h"
 
 #define PACKET_LOSS_PROBABILITY 0
 #define PACKET_TIMEOUT 3000
@@ -137,9 +141,12 @@ bool ServerSocket::writeToSocket(char buffer[], int size, void *args){
 		int data_size = write(client_file_descriptor, buffer, size);
 		success &= (data_size >= 0);
 	} else if(this->connection_type == SOCK_DGRAM){
+        //unreliable send
+		//sockaddr_in *client_address = (sockaddr_in *) ar[3];
+		//int data_size = sendto(socket_file_descriptor, buffer, size, 0, (struct sockaddr *) client_address, sizeof(*client_address));
+		//success &= (data_size >= 0);
 		sockaddr_in *client_address = (sockaddr_in *) ar[3];
-		int data_size = sendto(client_file_descriptor, buffer, size, 0, (struct sockaddr *) client_address, sizeof(*client_address));
-		success &= (data_size >= 0);
+        success &= (reliableUdpSend(buffer,size,client_address) > 0);
 	}
 
 	if(!success){
@@ -305,7 +312,10 @@ bool ServerSocket::handleUDPConnection() {
         unsigned long ip = client_address.sin_addr.s_addr;
         Packet packet(data_buffer,data_size);
         cout << "SOCK : " << socket_file_descriptor << " GOT new packet" << endl;
-        cout << "PACKET : " << packet.getSyncBit() << " Received" << endl;
+        if (packet.isAck())
+            cout << "PACKET : " << packet.getSyncBit() << " Received -- ACK --" << endl;
+        else
+            cout << "PACKET : " << packet.getSyncBit() << " Received" << endl;
 
         //check if this a new client or an old client
         if (mutex_map.count(make_pair(port,ip)) == 0){
@@ -328,9 +338,9 @@ bool ServerSocket::handleUDPConnection() {
             if (!bernoulli.shouldDoIt()){
                 sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
                         0, (struct sockaddr *) &client_address, sizeof(client_address));
-                cout << "PACKET : Ack message Sent" << endl;
+                cout << "PACKET : Ack " << ackPacket.getSyncBit() << " message Sent" << endl;
             }else{
-                cout << "PACKET : Ack message Lost" << endl;
+                cout << "PACKET : Ack " << ackPacket.getSyncBit() << " message Lost" << endl;
             }
 
             if (sync == true){
@@ -341,9 +351,6 @@ bool ServerSocket::handleUDPConnection() {
             }
 
             
-            pthread_t thrd;
-            pthread_attr_t attr;
-            pthread_attr_init(&attr);
 
             //void *args[4]; //XXX:THIS LINE WAS A DISASTER
             void **args = new void*[4];
@@ -359,9 +366,14 @@ bool ServerSocket::handleUDPConnection() {
             args[3] = (void *) client_address_p;
             
             //Create records of this thread
-            //1- save record in mutex_map and init the mutex
+            //1- save record in mutex_map and init the mutex , also init ack mutex
             mutex_map[make_pair(port,ip)] = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
             pthread_mutex_init(mutex_map[make_pair(port,ip)],NULL);
+
+            ack_mutex_map[make_pair(port,ip)] = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
+            pthread_mutex_init(ack_mutex_map[make_pair(port,ip)],NULL);
+            pthread_mutex_lock(ack_mutex_map[make_pair(port,ip)]);
+
             //2- create new buffer for the connection and copy the data to it
             char * thread_buffer = new char[udpBufferSize];
             buffers_map[make_pair(port,ip)] = thread_buffer;
@@ -370,6 +382,9 @@ bool ServerSocket::handleUDPConnection() {
             buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
 
             //4-start the new thread
+            pthread_t thrd;
+            pthread_attr_t attr;
+            pthread_attr_init(&attr);
             if(pthread_create(&thrd, NULL, playThread, (void *)args)){
                 cerr << "Failed to create thread!";
                 return false;
@@ -382,38 +397,46 @@ bool ServerSocket::handleUDPConnection() {
                 //TODO:handle disconnect mechanism
                 continue;
             }
+
             if (packet.isAck()){
-                //corrupt packet since receiver don't receive ACK packets
-                //TODO:send ack packet with last bit
-                continue;
-            }
-
-            int expectedSyncBit = !sync_map[make_pair(port,ip)];
-            //send ack packet
-            Packet ackPacket(true,packet.getSyncBit(),false,(char*)"",0);
-            if (!bernoulli.shouldDoIt()){
-                sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
-                        0, (struct sockaddr *) &client_address, sizeof(client_address));
-                cout << "PACKET : Ack message Sent" << endl;
+                //copy the buffer
+                char * thread_buffer = buffers_map[make_pair(port,ip)];
+                strcpy(thread_buffer, packet.getRawData());
+                buffers_lengths_map[make_pair(port,ip)] = packet.getRawDataLength();
+                //signal the ack mutex on the old thread
+                pthread_mutex_t * ack_mutex = ack_mutex_map[make_pair(port,ip)];
+                pthread_mutex_unlock(ack_mutex);
             }else{
-                cout << "PACKET : Ack message Lost" << endl;
+                int expectedSyncBit = !sync_map[make_pair(port,ip)];
+                //send ack packet
+                Packet ackPacket(true,packet.getSyncBit(),false,(char*)"",0);
+                if (!bernoulli.shouldDoIt()){
+                    sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
+                            0, (struct sockaddr *) &client_address, sizeof(client_address));
+                    cout << "PACKET : Ack " << ackPacket.getSyncBit() << " message Sent" << endl;
+                }else{
+                    cout << "PACKET : Ack " << ackPacket.getSyncBit() <<  " message Lost" << endl;
+                }
+
+                cout << "Expecting " << expectedSyncBit << " got : " << packet.getSyncBit() << endl;
+                if (expectedSyncBit != packet.getSyncBit()){
+                    //unsynchronized packet .. discard it
+                    cout << "PACKET : unsynced , discarded expecting : " << expectedSyncBit << " got : " << packet.getSyncBit() << endl;
+                    continue;
+                }
+
+                //invert the sync bit
+                sync_map[make_pair(port,ip)] = expectedSyncBit;
+
+                //copy the buffer
+                char * thread_buffer = buffers_map[make_pair(port,ip)];
+                strcpy(thread_buffer, packet.getData());
+                buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
+                //signal the waiting mutex on the old thread
+                pthread_mutex_t * thread_mutex = mutex_map[make_pair(port,ip)];
+                pthread_mutex_unlock(thread_mutex);
             }
 
-            if (expectedSyncBit != packet.getSyncBit()){
-                //unsynchronized packet .. discard it
-                cout << "PACKET : unsynced , discarded" << endl;
-                continue;
-            }
-
-            //invert the sync bit
-            sync_map[make_pair(port,ip)] = expectedSyncBit;
-
-            //signal the waiting mutex on the old thread
-            pthread_mutex_t * thread_mutex = mutex_map[make_pair(port,ip)];
-            char * thread_buffer = buffers_map[make_pair(port,ip)];
-            strcpy(thread_buffer, packet.getData());
-            buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
-            pthread_mutex_unlock(thread_mutex);
         }
 	}
 
@@ -447,6 +470,92 @@ void * ServerSocket::run(void * args){
 	ServerSocket *serverSocket = (ServerSocket *) args;
 	serverSocket->run_aux();
 	return NULL;
+}
+
+int ServerSocket::recvfromTimeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec){
+    struct timeval t;
+    t.tv_sec = msec/1000;
+    t.tv_usec = msec%1000;
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&t, sizeof(t)))
+        return -1;
+    int recv_count = recvfrom(socket_fd,buff,bufflen,0,client,client_len);
+    return recv_count;
+}
+
+int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * client_address){
+    int port = client_address->sin_port;
+    unsigned long ip = client_address->sin_addr.s_addr;
+    //----
+    //0 - create a new packet with syncbit = invertion the last one used
+    //1 - send the packet (if bernoulli says ok :) )
+    //2 - while not timeout (wait for the correct ACK packet)
+    //3 - if timeout go to step 1 else, we are done
+    //--------
+    //0
+    bool sync = !sync_map[make_pair(port,ip)];
+    bool done = false;
+    Packet packet(false,sync,false,buffer,length);
+    int ret = -1;
+    while (!done){
+        BernoulliTrial bt(PACKET_LOSS_PROBABILITY);
+        //1
+        bool packet_lost = bt.shouldDoIt();
+        if (!packet_lost){
+            cout << "PACKET: "<< sync << " sent" << endl;
+            ret = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
+                    (const struct sockaddr *)client_address,sizeof(*client_address));
+            //an error occured couldn't send the packet
+            if (ret < 0)
+                return ret;
+        }else
+            cout << "PACKET: "<< sync << " not sent" << endl;
+            
+        //2
+        bool correctACK = false;
+        int timeout = PACKET_TIMEOUT;
+        struct timeval start,end;
+        while (!correctACK){
+            //wait for ACK (ack size is very small (2bytes))
+            char data[10];
+            unsigned int sz = sizeof(*client_address);
+            gettimeofday(&start,NULL);
+
+            int port = client_address->sin_port;
+            unsigned long ip = client_address->sin_addr.s_addr;
+            pthread_mutex_t * mutex = ack_mutex_map[make_pair(port,ip)];
+            //start timer
+            MutexTimer timer(timeout,mutex);
+            pthread_mutex_lock(mutex);
+            timer.stop();
+
+            gettimeofday(&end,NULL);
+
+
+            //check for timeout
+            int delta = (end.tv_sec*1000 + end.tv_usec/1000) -
+                (start.tv_sec*1000 + start.tv_usec/1000);
+            timeout -= delta;
+            //timeout
+            if (timeout <= 0) 
+                break;
+
+            char * result = buffers_map[make_pair(port,ip)];
+            strcpy(data,result);
+            int ackret = buffers_lengths_map[make_pair(port,ip)];
+
+            //check packet
+            Packet ackPacket(data,ackret);
+            if (ackPacket.isAck() && ackPacket.getSyncBit() == sync){
+                //we are done
+                correctACK = true;
+                done = true;
+            }
+        }
+        if (!correctACK)
+            cout << "PACKET: "<< sync << " time out" << endl;
+    }
+    sync_map[make_pair(port,ip)] = sync;
+    return ret;
 }
 
 //=============================================================

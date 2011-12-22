@@ -65,10 +65,13 @@ class ServerSocket{
 		bool (*process)(void *);
 
         //============================================
-        //Reliable UDP variables
+        //Reliable UDP variables and methods
 
         //udp mutex map
         std::map<std::pair<int,unsigned long>,pthread_mutex_t *> mutex_map;
+
+        //udp ack mutex map
+        std::map<std::pair<int,unsigned long>,pthread_mutex_t *> ack_mutex_map;
 
         //udp buffer map
         std::map<std::pair<int,unsigned long>,char *> buffers_map;
@@ -79,6 +82,9 @@ class ServerSocket{
         //udp sync maps (sync bit for each client)
         std::map<std::pair<int,unsigned long>,bool> sync_map;
 
+        int reliableUdpSend(char* buffer,int length,struct sockaddr_in * client_address);
+
+        int recvfromTimeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec);
 	public:
 		// Constructors
 		ServerSocket();

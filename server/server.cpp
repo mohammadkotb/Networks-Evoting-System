@@ -107,6 +107,7 @@ bool handle_ftp_request(void *args){
 void * init_web_server(void * arg){
     ServerSocket serverSocket('U', 6060, 1024, 5, &handle_web_request);
     serverSocket.run(&serverSocket);
+    return NULL;
 }
 void *init_ftp_server(void * arg){
     cerr << "starting ftp server" << endl;
@@ -114,6 +115,7 @@ void *init_ftp_server(void * arg){
 	ftpServer->run();
 	delete(ftpServer);
 	printf("terminated\n");
+    return NULL;
 }
 
 int main() {
