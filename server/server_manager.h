@@ -44,6 +44,12 @@ private:
     // mutex for users_map_
     pthread_mutex_t users_map_mutex;
 
+    // map of candidate and the number of votes he got
+    map<string, int> votes_map;
+
+    // mutex for the votes map
+    pthread_mutex_t votes_map_mutex;
+
     // Similar to prepare_response_from_file. However, the response code is set to the input parameter: "code".
     // all occurrence of parameters map keys in the string loaded will be
     // replaced with the corresponding values
@@ -64,6 +70,9 @@ private:
     // Handles the login procedures when receiving a request for the login.php
     // page.
     void handle_login(string* response, const string& request_data);
+
+    // add a vote to a candidate using his username 
+    void addVote(string username);
 
 };
 

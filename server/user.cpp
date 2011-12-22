@@ -10,6 +10,7 @@ User::User(string type,string username,string password){
     this->type = type;
     this->username = username;
     this->password = password;
+    this->voted = false;
 }
 
 void User::setType(string type){
@@ -24,6 +25,10 @@ void User::setPassword(string password){
     this->password = password;
 }
 
+void User::setVoted(bool vote){
+	this->voted = vote;
+}
+
 string User::getType(){
     return this->type;
 }
@@ -34,6 +39,10 @@ string User::getPassword(){
 
 string User::getUserName(){
     return this->username;
+}
+
+bool User::getVoted(){
+    return this->voted;
 }
 
 User::~User(){

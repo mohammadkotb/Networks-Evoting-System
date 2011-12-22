@@ -16,10 +16,12 @@ using std::stringstream;
 
 ServerManager::ServerManager(){
     pthread_mutex_init(&users_map_mutex, NULL);
+    pthread_mutex_init(&votes_map_mutex, NULL);
 }
 
 ServerManager::~ServerManager(){
     pthread_mutex_destroy(&users_map_mutex);
+    pthread_mutex_destroy(&votes_map_mutex);
 }
 
 void ServerManager::prepare_response_with_code(string* prepared_response, const string& file_path, ResponseCode code,map<string,string>& parameters) {
@@ -124,6 +126,9 @@ VALIDATION_CODE ServerManager::can_add_user(const string& request_data) {
         if (new_user.getType() == "\"candidate\""){
             CommandSupporter command_supporter;
             command_supporter.mkdir("../ftdocs/"+username);
+	    pthread_mutex_lock(&votes_map_mutex);
+	    votes_map[username] = 0;
+	    pthread_mutex_unlock(&votes_map_mutex);
         }
         users_map_[username] = new_user;
         pthread_mutex_unlock(&users_map_mutex);
@@ -215,4 +220,10 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
     }
     return true;
     // handle rest of commands here
+}
+
+void ServerManager::addVote(string username){
+    pthread_mutex_lock(&votes_map_mutex);
+    votes_map[username] = votes_map[username] + 1;
+    pthread_mutex_unlock(&votes_map_mutex);
 }

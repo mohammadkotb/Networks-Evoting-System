@@ -8,6 +8,8 @@ class User{
         std::string type;
         std::string username;
         std::string password;
+	bool voted;
+
     public:
         //constructor
         User(std::string type,std::string username,std::string password);
@@ -17,10 +19,12 @@ class User{
         std::string getType();
         std::string getUserName();
         std::string getPassword();
+	bool getVoted();
         //setters
         void setType(std::string type);
         void setUserName(std::string username);
         void setPassword(std::string password);
+	void setVoted(bool vote);
         //destructor
         ~User();
 
