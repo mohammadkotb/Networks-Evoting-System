@@ -82,7 +82,7 @@ void GuiBuilder::build(QString & html){
                         submitElement = e;
                     } else if (e.attribute(TYPE_ATTRIB) == RADIO_ATTRIB_VAL) {
                         // radio code
-                        renderEngine->drawRadioButton(formName + "|~" + e.attribute(NAME_ATTRIB));
+                        renderEngine->drawRadioButton(formName + "|~" + e.attribute(NAME_ATTRIB), e.attribute(NAME_ATTRIB));
                         parametersList->append(formName + "|~" + e.attribute(NAME_ATTRIB));
                     }
                 }else if (e.tagName() == LINK_TAG){

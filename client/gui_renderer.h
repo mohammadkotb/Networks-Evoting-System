@@ -57,7 +57,7 @@ public:
      * draws an input radio button
      * QString name: the name of the radio button object
      */
-    void drawRadioButton(QString name);
+    void drawRadioButton(QString name, QString label);
 
 
     /* returns the value of the given textbox name

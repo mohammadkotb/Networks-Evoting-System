@@ -70,9 +70,10 @@ bool GuiRenderer::getRadioButtonValue(QString name) {
     return false;
 }
 
-void GuiRenderer::drawRadioButton(QString name) {
-    QRadioButton * textbox = new QRadioButton(name, mainwidget);
-    formLayout->addWidget(textbox);
+void GuiRenderer::drawRadioButton(QString name, QString label) {
+    QRadioButton * radio = new QRadioButton(name, mainwidget);
+    radio->setText(label);
+    formLayout->addWidget(radio);
 }
 
 void GuiRenderer::clear(){
