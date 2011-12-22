@@ -40,13 +40,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     ui->remoteTreeWidget->addTopLevelItem(it);
 
     renderEngine = new GuiRenderer(ui->canvas->widget(),this);
+    ftpConnected = false;
 }
 
 void MainWindow::abort(){
+    if (ftpConnected)
         ftpClient->abort();
+    else{
+        QMessageBox::warning(this, tr("login Error"),
+            tr("please connect to ftp server first"));
+    }
 }
 
 void MainWindow::makeDirectory(){
+    if (!ftpConnected){
+        QMessageBox::warning(this, tr("login Error"),
+            tr("please connect to ftp server first"));
+        return;
+    }
     //TODO:check for return values
     QTreeWidgetItem * item = ui->remoteTreeWidget->currentItem();
     QString itemName = item->data(0,Qt::UserRole).toString();
@@ -57,8 +68,17 @@ void MainWindow::makeDirectory(){
 }
 
 void MainWindow::ftpDisconnect(){
-    //TODO:check for return values
-    ftpClient->disconnect();
+    if (!ftpConnected){
+        QMessageBox::warning(this, tr("login Error"),
+            tr("please connect to ftp server first"));
+        return;
+    }
+    if(ftpClient->disconnect()){
+        ftpConnected = false;
+    }else{
+        QMessageBox::warning(this, tr("Error"),
+            tr("disconnection failed"));
+    }
 }
 void MainWindow::ftpConnect(){
     //TODO:check for return values of login
@@ -72,15 +92,23 @@ void MainWindow::ftpConnect(){
                  tr("invalid username or password"));
         }else if (res == 1){
                 ui->uploadButton->setDisabled(true);
+                ftpConnected = true;
         }else if (res == 2){
                 ui->uploadButton->setEnabled(true);
+                ftpConnected = true;
         }
+
     }catch(int e){
         qDebug() << "Can't connect to ftp server";
     }
 }
 
 void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
+    if (!ftpConnected){
+        QMessageBox::warning(this, tr("login Error"),
+            tr("please connect to ftp server first"));
+        return;
+    }
     QString itemName = item->data(0,Qt::UserRole).toString();
     if (itemName[itemName.length()-1] != '/'){
         return;
@@ -117,6 +145,11 @@ void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
 }
 
 void MainWindow::downloadFile(){
+    if (!ftpConnected){
+        QMessageBox::warning(this, tr("login Error"),
+            tr("please connect to ftp server first"));
+        return;
+    }
     //get the remote file name
     QTreeWidgetItem * item = ui->remoteTreeWidget->currentItem();
     if (item == 0){
@@ -156,6 +189,11 @@ void MainWindow::downloadFile(){
 }
 
 void MainWindow::uploadFile(){
+    if (!ftpConnected){
+        QMessageBox::warning(this, tr("login Error"),
+            tr("please connect to ftp server first"));
+        return;
+    }
     //get local selected file
     QFileSystemModel * model =(QFileSystemModel*) ui->localTreeView->model();
     QModelIndexList indexes = ui->localTreeView->selectionModel()->selectedRows();

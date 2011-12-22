@@ -140,6 +140,7 @@ int ClientSocket::readFromSocket(char buf[], int buffer_size){
             receiveLastSyncBit = expectedSyncBit;
             done = true;
             memcpy(buf,packet.getData(),packet.getDataLength());
+            ret = packet.getDataLength();
         }
     }
 
