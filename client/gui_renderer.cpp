@@ -65,14 +65,17 @@ QString GuiRenderer::getTextBoxValue(QString name){
 
 bool GuiRenderer::getRadioButtonValue(QString name) {
     QRadioButton* radio = mainwidget->findChild<QRadioButton*>(name);
+    qDebug() << "aloooooooooooooooooooooooooooooooooooooooooooooooo";
+    qDebug() << "radio value " << radio->isChecked();
     if (radio != NULL)
         return radio->isChecked();
     return false;
 }
 
 void GuiRenderer::drawRadioButton(QString name, QString label) {
-    QRadioButton * radio = new QRadioButton(name, mainwidget);
-    radio->setText(label);
+    QRadioButton * radio = new QRadioButton(label, mainwidget);
+    //radio->setText(label);
+    radio->setObjectName(name);
     formLayout->addWidget(radio);
 }
 
