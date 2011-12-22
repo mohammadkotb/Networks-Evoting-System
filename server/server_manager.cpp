@@ -264,8 +264,11 @@ void ServerManager::prepare_candidates_lists(string* response) {
             html << "<input type=\"radio\" name=" << user.getUserName() <<  "/>";
         }
     }
+    html << "<input type=\"submit\"/>";
     html << "</form>";
     html << "</body>";
     html << "</html>";
+    cout << "??????????---------------------------------------------" << endl;
+    cout << html.str() << endl;
     *response = html.str();
 }
