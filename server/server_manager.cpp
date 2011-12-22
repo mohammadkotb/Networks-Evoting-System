@@ -69,6 +69,8 @@ void ServerManager::handle_request(string* response, const string& request_data)
         }
     } else if(required_file_name == "/results.html") {
             show_elections_results(response);
+    } else if (required_file_name == "/vote.html" ) {
+            prepare_candidates_lists(response);
     }else {
         ResponseCode code(NOT_FOUND);
         prepare_response_with_code(response, NOTFOUND_HTML, code,parameters);
@@ -244,6 +246,25 @@ void ServerManager::show_elections_results(string* response) {
         html << (*itr).first << ": ";
         html << (*itr).second << " votes." << "</p>";
     }
+    html << "</body>";
+    html << "</html>";
+    *response = html.str();
+}
+
+void ServerManager::prepare_candidates_lists(string* response) {
+    stringstream html;
+    html << "<html>" ;
+    html << "<head></head>";
+    html << "<body>";
+    html << "<form action=vote.php>";
+    map<string, User>::iterator itr;
+    for (itr = users_map_.begin(); itr != users_map_.end(); itr++) {
+        User user = itr->second;
+        if (user.getType() == "\"candidate\"") {
+            html << "<input type=\"radio\" name=\"" << user.getUserName() <<  "\"/>";
+        }
+    }
+    html << "</form>";
     html << "</body>";
     html << "</html>";
     *response = html.str();

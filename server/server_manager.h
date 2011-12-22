@@ -77,6 +77,9 @@ private:
 
     // dynamically generating show elections results for users
     void show_elections_results(string* response);
+
+    // dynamically generate the html page with the candidates names
+    void prepare_candidates_lists(string* response);
 };
 
 #endif // SERVER_MANAGER_H
