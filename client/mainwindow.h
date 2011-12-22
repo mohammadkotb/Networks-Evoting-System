@@ -58,6 +58,7 @@ private:
     GuiRenderer * renderEngine;
     QString currentUrl;
     FtpClient * ftpClient;
+    bool ftpConnected;
 
 };
 
