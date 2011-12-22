@@ -2,6 +2,7 @@
 #define TIMER_H_
 
 #include <pthread.h>
+#include <signal.h>
 
 class MutexTimer{
     public:
@@ -10,5 +11,6 @@ class MutexTimer{
         void stop();
     private:
         bool *cancel;
+	pthread_t thread;
 };
 #endif
