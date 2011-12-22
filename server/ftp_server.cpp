@@ -96,7 +96,7 @@ bool FTPServer::downloadFile(char *fileName,int port, void *args){
         //this just sends a dummy packet so if the udp client was blocked
         //it can continue by writing empty string to file and exiting the loop
         //as the number of written bytes will be n=0
-        dataServerSocket->writeToSocket((char *)"", args);
+        dataServerSocket->writeToSocket((char *)"",0, args);
 
 
         cerr << "closing file " << fileName << endl;

@@ -172,8 +172,8 @@ int ServerSocket::readFromSocket(char * buffer,int buffsize,void * args){
         pthread_mutex_t * mutex = mutex_map[make_pair(port,ip)];
         pthread_mutex_lock(mutex);
         char * result = buffers_map[make_pair(port,ip)];
-        strcpy(buffer,result);
         int len = buffers_lengths_map[make_pair(port,ip)];
+        memcpy(buffer,result,len);
         ret = len;
     }
     return ret;
@@ -378,7 +378,7 @@ bool ServerSocket::handleUDPConnection() {
             //2- create new buffer for the connection and copy the data to it
             char * thread_buffer = new char[udpBufferSize];
             buffers_map[make_pair(port,ip)] = thread_buffer;
-            strcpy(thread_buffer, packet.getData());
+            memcpy(thread_buffer, packet.getData(),packet.getDataLength());
             //3- set the length of msg
             buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
 
@@ -405,7 +405,7 @@ bool ServerSocket::handleUDPConnection() {
             if (packet.isAck()){
                 //copy the buffer
                 char * thread_buffer = buffers_map[make_pair(port,ip)];
-                strcpy(thread_buffer, packet.getRawData());
+                memcpy(thread_buffer, packet.getRawData(),packet.getRawDataLength());
                 buffers_lengths_map[make_pair(port,ip)] = packet.getRawDataLength();
                 //signal the ack mutex on the old thread
                 pthread_mutex_t * ack_mutex = ack_mutex_map[make_pair(port,ip)];
@@ -433,7 +433,7 @@ bool ServerSocket::handleUDPConnection() {
 
                 //copy the buffer
                 char * thread_buffer = buffers_map[make_pair(port,ip)];
-                strcpy(thread_buffer, packet.getData());
+                memcpy(thread_buffer, packet.getData(),packet.getDataLength());
                 buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
                 //signal the waiting mutex on the old thread
                 pthread_mutex_t * thread_mutex = mutex_map[make_pair(port,ip)];
@@ -544,8 +544,8 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
                 break;
 
             char * result = buffers_map[make_pair(port,ip)];
-            strcpy(data,result);
             int ackret = buffers_lengths_map[make_pair(port,ip)];
+            memcpy(data,result,ackret);
 
             //check packet
             Packet ackPacket(data,ackret);
