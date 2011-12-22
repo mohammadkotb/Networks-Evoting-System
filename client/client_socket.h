@@ -33,8 +33,11 @@ class ClientSocket{
         //EAGAIN or EWOULDBLOCK
         int recvfromTimeout(int,char*,int,struct sockaddr*,socklen_t*,int millisec);
 
-        //used to alternate packet sync numbers
-        bool lastSyncBit;
+        //used to alternate packet sync numbers for send
+        bool sendLastSyncBit;
+
+        //used to alternate packet sync numbers for udp
+        bool receiveLastSyncBit;
 
         //reliable send method
         int reliableUdpSend(char* buffer,int length);

@@ -55,8 +55,10 @@ bool ClientSocket::init(char connection_type, int server_port_number, char *serv
         }
     }
 
-    //lastSyncBit initialized to true so on the first use it will be inverted to false
-    lastSyncBit = true;
+    //sendLastSyncBit initialized to true so on the first use it will be inverted to false
+    sendLastSyncBit = true;
+    //receiveLastSyncBit initialized to true so on the first use it will be inverted to false
+    receiveLastSyncBit = true;
 
     return true;
 }
@@ -100,7 +102,7 @@ int ClientSocket::readFromSocket(char buf[], int buffer_size){
         //reliable receive
         //wait till get the Packet with the correct Sync bit
         bool done = false;
-        bool expectedSyncBit = !lastSyncBit;
+        bool expectedSyncBit = !receiveLastSyncBit;
         BernoulliTrial bernoulli(PACKET_LOSS_PROBABILITY);
         while (!done){
             unsigned int sz = sizeof(sender_address);
@@ -130,8 +132,9 @@ int ClientSocket::readFromSocket(char buf[], int buffer_size){
                 cout << "PACKET : unsynced , discarded" << endl;
                 continue;
             }
-            lastSyncBit = expectedSyncBit;
+            receiveLastSyncBit = expectedSyncBit;
             done = true;
+            strcpy(buf,packet.getData());
         }
     }
 
@@ -162,7 +165,7 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
     //3 - if timeout go to step 1 else, we are done
     //--------
     //0
-    bool sync = !lastSyncBit;
+    bool sync = !sendLastSyncBit;
     bool done = false;
     Packet packet(false,sync,false,buffer,length);
     while (!done){
@@ -217,7 +220,7 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
         if (!correctACK)
             cout << "PACKET: "<< sync << " time out" << endl;
     }
-    lastSyncBit = sync;
+    sendLastSyncBit = sync;
 }
 
 int ClientSocket::recvfromTimeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec){

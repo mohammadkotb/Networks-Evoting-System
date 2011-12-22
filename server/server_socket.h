@@ -79,8 +79,11 @@ class ServerSocket{
         //udp received message length map
         std::map<std::pair<int,unsigned long>,int> buffers_lengths_map;
 
-        //udp sync maps (sync bit for each client)
-        std::map<std::pair<int,unsigned long>,bool> sync_map;
+        //udp send sync maps (sync bit for each client)
+        std::map<std::pair<int,unsigned long>,bool> send_sync_map;
+
+        //udp recieve sync maps (sync bit for each client)
+        std::map<std::pair<int,unsigned long>,bool> receive_sync_map;
 
         int reliableUdpSend(char* buffer,int length,struct sockaddr_in * client_address);
 

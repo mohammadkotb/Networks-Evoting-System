@@ -48,6 +48,7 @@ bool handle_web_request(void * args){
         std::vector<char> writable(response.size()+1);
         std::copy(response.begin(), response.end(), writable.begin());
         writable[response.size()] = '\0';
+
         //@Moustafa: please change to const char * instead of char *
         serverSocket->writeToSocket(&writable[0], args);
 

@@ -350,8 +350,6 @@ bool ServerSocket::handleUDPConnection() {
                 continue;
             }
 
-            
-
             //void *args[4]; //XXX:THIS LINE WAS A DISASTER
             void **args = new void*[4];
             sockaddr_in * client_address_p = (sockaddr_in *) malloc(sizeof(sockaddr_in));
@@ -381,7 +379,10 @@ bool ServerSocket::handleUDPConnection() {
             //3- set the length of msg
             buffers_lengths_map[make_pair(port,ip)] = packet.getDataLength();
 
-            //4-start the new thread
+            //4- set send sync map to 1 (last sync bit used so the first one
+            //to be used is 0)
+            send_sync_map[make_pair(port,ip)] = true;
+            //5-start the new thread
             pthread_t thrd;
             pthread_attr_t attr;
             pthread_attr_init(&attr);
@@ -407,7 +408,7 @@ bool ServerSocket::handleUDPConnection() {
                 pthread_mutex_t * ack_mutex = ack_mutex_map[make_pair(port,ip)];
                 pthread_mutex_unlock(ack_mutex);
             }else{
-                int expectedSyncBit = !sync_map[make_pair(port,ip)];
+                int expectedSyncBit = !receive_sync_map[make_pair(port,ip)];
                 //send ack packet
                 Packet ackPacket(true,packet.getSyncBit(),false,(char*)"",0);
                 if (!bernoulli.shouldDoIt()){
@@ -426,7 +427,7 @@ bool ServerSocket::handleUDPConnection() {
                 }
 
                 //invert the sync bit
-                sync_map[make_pair(port,ip)] = expectedSyncBit;
+                receive_sync_map[make_pair(port,ip)] = expectedSyncBit;
 
                 //copy the buffer
                 char * thread_buffer = buffers_map[make_pair(port,ip)];
@@ -492,7 +493,7 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
     //3 - if timeout go to step 1 else, we are done
     //--------
     //0
-    bool sync = !sync_map[make_pair(port,ip)];
+    bool sync = !send_sync_map[make_pair(port,ip)];
     bool done = false;
     Packet packet(false,sync,false,buffer,length);
     int ret = -1;
@@ -554,7 +555,7 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
         if (!correctACK)
             cout << "PACKET: "<< sync << " time out" << endl;
     }
-    sync_map[make_pair(port,ip)] = sync;
+    send_sync_map[make_pair(port,ip)] = sync;
     return ret;
 }
 
