@@ -261,11 +261,14 @@ void ServerManager::prepare_candidates_lists(string* response) {
     for (itr = users_map_.begin(); itr != users_map_.end(); itr++) {
         User user = itr->second;
         if (user.getType() == "\"candidate\"") {
-            html << "<input type=\"radio\" name=\"" << user.getUserName() <<  "\"/>";
+            html << "<input type=\"radio\" name=" << user.getUserName() <<  "/>";
         }
     }
+    html << "<input type=\"submit\"/>";
     html << "</form>";
     html << "</body>";
     html << "</html>";
+    cout << "??????????---------------------------------------------" << endl;
+    cout << html.str() << endl;
     *response = html.str();
 }
