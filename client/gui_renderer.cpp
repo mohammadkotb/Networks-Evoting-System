@@ -63,6 +63,18 @@ QString GuiRenderer::getTextBoxValue(QString name){
     return "";
 }
 
+bool GuiRenderer::getRadioButtonValue(QString name) {
+    QRadioButton* radio = mainwidget->findChild<QRadioButton*>(name);
+    if (radio != NULL)
+        return radio->isChecked();
+    return false;
+}
+
+void GuiRenderer::drawRadioButton(QString name) {
+    QRadioButton * textbox = new QRadioButton(name, mainwidget);
+    formLayout->addWidget(textbox);
+}
+
 void GuiRenderer::clear(){
     QList<QWidget *> widgets = mainwidget->findChildren<QWidget *>();
     foreach(QWidget * widget, widgets)

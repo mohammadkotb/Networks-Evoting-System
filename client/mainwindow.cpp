@@ -262,11 +262,26 @@ void MainWindow::submit(QObject* obj){
     if (lst->size() > 1){
         new_page += "?";
         for (int i=0;i<lst->size()-1;++i){
+            QString parameter = lst->at(i);
+            if (parameter.contains("||")) {
+                QString name = parameter.mid(parameter.lastIndexOf("||") + 2);
+                new_page += name + "=\"" + renderEngine->getTextBoxValue(parameter) + "\"";
+            } else if (parameter.contains("|~")) {
+                QString name = parameter.mid(parameter.lastIndexOf("|~") + 2);
+                if (renderEngine->getRadioButtonValue(parameter)) {
+                    new_page += "selected=\"" + name + "\"";
+                }
+            }
+            if (i != lst->size() - 2) {
+                new_page += "&";
+            }
+            /*
             QString name = lst->at(i).mid(lst->at(i).lastIndexOf("|") + 1);
             if (i == lst->size() -2)
                 new_page += name + "=\"" + renderEngine->getTextBoxValue(lst->at(i)) + "\"";
             else
                 new_page += name + "=\"" + renderEngine->getTextBoxValue(lst->at(i)) + "\"&";
+            */
         }
     }
     redirect(new_page);

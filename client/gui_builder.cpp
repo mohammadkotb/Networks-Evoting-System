@@ -14,6 +14,7 @@
 #define TEXT_ATTRIB_VAL "text"
 #define PASSWORD_ATTRIB_VAL "password"
 #define SUBMIT_ATTRIB_VAL "submit"
+#define RADIO_ATTRIB_VAL "radio"
 
 GuiBuilder::GuiBuilder(GuiRenderer * engine){
     this->renderEngine = engine;
@@ -72,13 +73,17 @@ void GuiBuilder::build(QString & html){
             while (!e.isNull()){
                 if (e.tagName() == INPUT_TAG){
                     if (e.attribute(TYPE_ATTRIB) == TEXT_ATTRIB_VAL){
-                        renderEngine->drawTextBox(formName + "|" +e.attribute(NAME_ATTRIB));
-                        parametersList->append(formName + "|" + e.attribute(NAME_ATTRIB));
-                    }else if (e.attribute(TYPE_ATTRIB) == PASSWORD_ATTRIB_VAL){
-                        renderEngine->drawPasswordTextBox(formName + "|" +e.attribute(NAME_ATTRIB));
-                        parametersList->append(formName + "|" + e.attribute(NAME_ATTRIB));
-                    }else if (e.attribute(TYPE_ATTRIB) == SUBMIT_ATTRIB_VAL){
+                        renderEngine->drawTextBox(formName + "||" +e.attribute(NAME_ATTRIB));
+                        parametersList->append(formName + "||" + e.attribute(NAME_ATTRIB));
+                    } else if (e.attribute(TYPE_ATTRIB) == PASSWORD_ATTRIB_VAL){
+                        renderEngine->drawPasswordTextBox(formName + "||" +e.attribute(NAME_ATTRIB));
+                        parametersList->append(formName + "||" + e.attribute(NAME_ATTRIB));
+                    } else if (e.attribute(TYPE_ATTRIB) == SUBMIT_ATTRIB_VAL){
                         submitElement = e;
+                    } else if (e.attribute(TYPE_ATTRIB) == RADIO_ATTRIB_VAL) {
+                        // radio code
+                        renderEngine->drawRadioButton(formName + "|~" + e.attribute(NAME_ATTRIB));
+                        parametersList->append(formName + "|~" + e.attribute(NAME_ATTRIB));
                     }
                 }else if (e.tagName() == LINK_TAG){
                     //anchor tag

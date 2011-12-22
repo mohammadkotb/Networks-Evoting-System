@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QSignalMapper>
+#include <QRadioButton>
 
 class GuiRenderer
 {
@@ -52,6 +53,12 @@ public:
      */
     void drawText(QString text);
 
+    /*
+     * draws an input radio button
+     * QString name: the name of the radio button object
+     */
+    void drawRadioButton(QString name);
+
 
     /* returns the value of the given textbox name
      * input:
@@ -60,6 +67,11 @@ public:
      * QString : the value of the text box
      */
     QString getTextBoxValue(QString name);
+
+    /*
+     *
+     */
+    bool getRadioButtonValue(QString name);
 };
 
 #endif // GUI_RENDERER_H
