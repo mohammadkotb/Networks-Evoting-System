@@ -7,7 +7,10 @@
 #include "mutex_timer.h"
 
 #define PACKET_LOSS_PROBABILITY 0
+#define ACK_LOSS_PROBABILITY 0
+
 #define PACKET_TIMEOUT 3000
+#define TIMEOUT_COUNT 8
 
 using std::cout;
 using std::cerr;
@@ -123,7 +126,7 @@ int ServerSocket::read_tcp(char buffer[], int client_file_descriptor){
 }
 
 bool ServerSocket::writeToSocket(char buffer[], void *args){
-	return writeToSocket(buffer, strlen(buffer), args);
+	return writeToSocket(buffer, strlen(buffer) + 1, args);
 }
 
 bool ServerSocket::writeToSocket(char buffer[], int size, void *args){
@@ -277,7 +280,7 @@ void ServerSocket::handleUDPRequest(void *args){
         if (!keepConnection)
             break;
     }
-    cout << "Connection Closed" << endl;
+    cout << "CONNECTION CLOSED" << endl;
 
     //TODO:
     //free args
@@ -293,7 +296,7 @@ bool ServerSocket::handleUDPConnection() {
 	char data_buffer[bufferSize];
 	int data_size;
 	cerr << "Waiting for UDP requests" << endl;
-    BernoulliTrial bernoulli(PACKET_LOSS_PROBABILITY);
+    BernoulliTrial bernoulli(ACK_LOSS_PROBABILITY);
 
 	while (1) {
 		// Initialize data_buffer to zero.
@@ -313,9 +316,9 @@ bool ServerSocket::handleUDPConnection() {
         Packet packet(data_buffer,data_size);
         cout << "SOCK : " << socket_file_descriptor << " GOT new packet" << endl;
         if (packet.isAck())
-            cout << "PACKET : " << packet.getSyncBit() << " Received -- ACK --" << endl;
+            cout << "<---- PACKET : " << packet.getSyncBit() << " Received -- ACK --" << endl;
         else
-            cout << "PACKET : " << packet.getSyncBit() << " Received" << endl;
+            cout << "<---- PACKET : " << packet.getSyncBit() << " Received" << endl;
 
         //check if this a new client or an old client
         if (mutex_map.count(make_pair(port,ip)) == 0){
@@ -338,15 +341,15 @@ bool ServerSocket::handleUDPConnection() {
             if (!bernoulli.shouldDoIt()){
                 sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
                         0, (struct sockaddr *) &client_address, sizeof(client_address));
-                cout << "PACKET : Ack " << ackPacket.getSyncBit() << " message Sent" << endl;
+                cout << "----> PACKET : Ack " << ackPacket.getSyncBit() << " message Sent" << endl;
             }else{
-                cout << "PACKET : Ack " << ackPacket.getSyncBit() << " message Lost" << endl;
+                cout << "-||-> PACKET : Ack " << ackPacket.getSyncBit() << " message Simulated Loss" << endl;
             }
 
             if (sync == true){
                 //unsynchronized packet .. new client is expecting a 0 sync
                 //packet so discard packet
-                cout << "PACKET : unsynced , discarded" << endl;
+                cout << "----- PACKET : unsynced , discarded" << endl;
                 continue;
             }
 
@@ -414,15 +417,14 @@ bool ServerSocket::handleUDPConnection() {
                 if (!bernoulli.shouldDoIt()){
                     sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
                             0, (struct sockaddr *) &client_address, sizeof(client_address));
-                    cout << "PACKET : Ack " << ackPacket.getSyncBit() << " message Sent" << endl;
+                    cout << "----> PACKET : Ack " << ackPacket.getSyncBit() << " message Sent" << endl;
                 }else{
-                    cout << "PACKET : Ack " << ackPacket.getSyncBit() <<  " message Lost" << endl;
+                    cout << "-||-> PACKET : Ack " << ackPacket.getSyncBit() <<  " message Simulated Loss" << endl;
                 }
 
-                cout << "Expecting " << expectedSyncBit << " got : " << packet.getSyncBit() << endl;
                 if (expectedSyncBit != packet.getSyncBit()){
                     //unsynchronized packet .. discard it
-                    cout << "PACKET : unsynced , discarded expecting : " << expectedSyncBit << " got : " << packet.getSyncBit() << endl;
+                    cout << "----- PACKET : unsynced , discarded expecting : " << expectedSyncBit << " got : " << packet.getSyncBit() << endl;
                     continue;
                 }
 
@@ -497,19 +499,20 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
     bool done = false;
     Packet packet(false,sync,false,buffer,length);
     int ret = -1;
-    while (!done){
-        BernoulliTrial bt(PACKET_LOSS_PROBABILITY);
+    BernoulliTrial bt(PACKET_LOSS_PROBABILITY);
+    int count = 0;
+    while (!done && count < TIMEOUT_COUNT){
         //1
         bool packet_lost = bt.shouldDoIt();
         if (!packet_lost){
-            cout << "PACKET: "<< sync << " sent" << endl;
+            cout << "----> PACKET : "<< sync << " sent" << endl;
             ret = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
                     (const struct sockaddr *)client_address,sizeof(*client_address));
-            //an error occured couldn't send the packet
+            //an error occurred couldn't send the packet
             if (ret < 0)
                 return ret;
         }else
-            cout << "PACKET: "<< sync << " not sent" << endl;
+            cout << "-||-> PACKET : "<< sync << " Simulated Loss" << endl;
             
         //2
         bool correctACK = false;
@@ -553,7 +556,8 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
             }
         }
         if (!correctACK)
-            cout << "PACKET: "<< sync << " time out" << endl;
+            cout << "----- PACKET : "<< sync << " time out #" << count << endl;
+        count++;
     }
     send_sync_map[make_pair(port,ip)] = sync;
     return ret;

@@ -9,8 +9,9 @@ void* thread_func(void *args){
     usleep(time * 1000);
     if (!(*cancel))
         pthread_mutex_unlock(mutex);
-    delete(cancel);
+    //delete(cancel);
     delete((int *)ar[1]);
+    delete(ar);
     return NULL;
 }
 

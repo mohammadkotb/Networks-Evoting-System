@@ -5,7 +5,10 @@
 #include <cerrno>
 
 #define PACKET_LOSS_PROBABILITY 0
+#define ACK_LOSS_PROBABILITY 0
+
 #define PACKET_TIMEOUT 3000
+#define TIMEOUT_COUNT 8
 
 using std::cout;
 using std::cerr;
@@ -103,38 +106,40 @@ int ClientSocket::readFromSocket(char buf[], int buffer_size){
         //wait till get the Packet with the correct Sync bit
         bool done = false;
         bool expectedSyncBit = !receiveLastSyncBit;
-        BernoulliTrial bernoulli(PACKET_LOSS_PROBABILITY);
+        BernoulliTrial bernoulli(ACK_LOSS_PROBABILITY);
         while (!done){
             unsigned int sz = sizeof(sender_address);
             ret = recvfrom(socket_file_descriptor, buf, buffer_size, 0, (struct sockaddr *)&sender_address, &sz);
-            if (ret < 0) return ret; //error in recvfrom function
+            if (ret < 0) continue;
 
             Packet packet(buf,ret);
             if (packet.isDisconnect() || packet.isAck()){
                 //corrupt packet since receiver is waiting for data packets
                 //TODO: send ack packet with syncbit = lastSyncBit
+                cout << "CORRUPT" << endl;
                 continue;
             }
-            cout << "PACKET " << packet.getSyncBit() << " received" << endl;
+
+            cout << "<---- PACKET : " << packet.getSyncBit() << " received" << endl;
 
             //send ack packet
             Packet ackPacket(true,packet.getSyncBit(),false,(char*)"",0);
             if (!bernoulli.shouldDoIt()){
                 sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
                         0, (struct sockaddr *)&server_address, sizeof(server_address));
-                cout << "PACKET : Ack "<< packet.getSyncBit() << " message Sent" << endl;
+                cout << "----> PACKET : Ack "<< packet.getSyncBit() << " message Sent" << endl;
             }else{
-                cout << "PACKET : Ack "<< packet.getSyncBit() << " message Lost" << endl;
+                cout << "-||-> PACKET : Ack "<< packet.getSyncBit() << " message Simulated Loss" << endl;
             }
 
             if (expectedSyncBit != packet.getSyncBit()){
                 //unsynchronized packet .. discard it
-                cout << "PACKET : unsynced , discarded" << endl;
+                cout << "----- PACKET : " << packet.getSyncBit() << " unsynced , discarded" << endl;
                 continue;
             }
             receiveLastSyncBit = expectedSyncBit;
             done = true;
-            strcpy(buf,packet.getData());
+            memcpy(buf,packet.getData(),packet.getDataLength());
         }
     }
 
@@ -168,19 +173,20 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
     bool sync = !sendLastSyncBit;
     bool done = false;
     Packet packet(false,sync,false,buffer,length);
-    while (!done){
-        BernoulliTrial bt(PACKET_LOSS_PROBABILITY);
+    BernoulliTrial bt(PACKET_LOSS_PROBABILITY);
+    int count = 0;
+    while (!done && count < TIMEOUT_COUNT){
         //1
         bool packet_lost = bt.shouldDoIt();
         if (!packet_lost){
-            cout << "PACKET: "<< sync << " sent" << endl;
+            cout << "----> PACKET : "<< sync << " sent" << endl;
             int ret = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
                     (const struct sockaddr *)&server_address,sizeof(server_address));
             //an error occured couldn't send the packet
             if (ret < 0)
                 return ret;
         }else
-            cout << "PACKET: "<< sync << " not sent" << endl;
+            cout << "-||-> PACKET : "<< sync << " Simulated Loss" << endl;
             
         //2
         bool correctACK = false;
@@ -205,7 +211,7 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
             //check packet
             Packet ackPacket(data,ackret);
             if (ackPacket.isAck() && ackPacket.getSyncBit() == sync){
-                cout << "ACK " << ackPacket.getSyncBit() << " packet received" << endl;
+                cout << "<---- ACK " << ackPacket.getSyncBit() << " packet received" << endl;
                 //we are done
                 correctACK = true;
                 done = true;
@@ -218,7 +224,8 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
             }
         }
         if (!correctACK)
-            cout << "PACKET: "<< sync << " time out" << endl;
+            cout << "----- PACKET : "<< sync << " time out #" << count << endl;
+        count++;
     }
     sendLastSyncBit = sync;
 }
