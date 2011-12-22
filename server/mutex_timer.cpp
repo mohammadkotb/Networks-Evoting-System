@@ -9,7 +9,7 @@ void* thread_func(void *args){
     usleep(time * 1000);
     if (!(*cancel))
         pthread_mutex_unlock(mutex);
-    //delete(cancel);
+    delete(cancel);
     delete((int *)ar[1]);
     delete(ar);
     return NULL;
@@ -24,7 +24,7 @@ MutexTimer::MutexTimer(int millisec,pthread_mutex_t * mutex){
     args[1] =(void *) ms;
     args[2] =(void *) cancel;
 
-    pthread_t thread;
+//    pthread_t thread;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     if(pthread_create(&thread, NULL, thread_func, (void *)args))
@@ -34,7 +34,8 @@ MutexTimer::MutexTimer(int millisec,pthread_mutex_t * mutex){
 }
 
 void MutexTimer::stop(){
-    *cancel = true;
+    if(!pthread_kill(thread, 0))
+	*cancel = true;
 }
 
 MutexTimer::~MutexTimer(){
