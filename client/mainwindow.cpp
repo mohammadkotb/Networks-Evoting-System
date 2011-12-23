@@ -269,7 +269,7 @@ void MainWindow::submit(QObject* obj){
             } else if (parameter.contains("|~")) {
                 for (; i < lst->size()-1; ++i) {
                     parameter = lst->at(i);
-                    if (parameter.contains("||")) break;
+                    if (!parameter.contains("|~")) break;
                     QString name = parameter.mid(parameter.lastIndexOf("|~") + 2);
                     if (renderEngine->getRadioButtonValue(parameter)) {
                         new_page += "selected=\"" + name + "\"";
@@ -277,8 +277,6 @@ void MainWindow::submit(QObject* obj){
                 }
                 i--;
             } else if (parameter.contains("|!")) {
-                qDebug() << "aloooooooooooooo!#$^!#$^!#$%!^!#$%!@#$!@#^%!@#$!@#%";
-                qDebug() << "parameter = " << parameter;
                 QString params = parameter.mid(parameter.indexOf("|!")+2);
                 QString type = params.mid(0, params.indexOf("|!"));
                 QString value = params.mid(params.indexOf("|!") + 2);
@@ -288,12 +286,6 @@ void MainWindow::submit(QObject* obj){
                 new_page += "&";
             }
         }
-    }
-    qDebug() << "Endddddddddddddddddddddddddddddddddddddddddddddddddddddddddd-======>";
-    qDebug() << new_page;
-    qDebug() << "list names";
-    for (int j = 0; j < lst->size(); j++) {
-        qDebug() << j << ". "  << lst->at(j);
     }
     redirect(new_page);
 }

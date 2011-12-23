@@ -86,7 +86,6 @@ void GuiBuilder::build(QString & html){
                         renderEngine->drawRadioButton(formName + "|~" + e.attribute(NAME_ATTRIB), e.attribute(NAME_ATTRIB));
                         parametersList->append(formName + "|~" + e.attribute(NAME_ATTRIB));
                     } else if (e.attribute(TYPE_ATTRIB) == HIDDEN_ATTRIB_VAL) {
-                        qDebug() << "bomobbbbbbbbbbbbbbbbbooooooooooooo";
                         parametersList->append(formName + "|!" + e.attribute(NAME_ATTRIB) + "|!" + e.attribute(VALUE_ATTRIB));
                     }
                 }else if (e.tagName() == LINK_TAG){
