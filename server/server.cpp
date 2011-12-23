@@ -60,6 +60,8 @@ bool handle_web_request(void * args){
         cout << "parameters : " << endl;
         for (;it != m->end();it++)
             cout << it->first << " = " << request.getParameter(it->first) << endl;
+
+        cout << "RESP \n"<< response << endl;
         */
 
     }catch(int e){

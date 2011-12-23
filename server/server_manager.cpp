@@ -30,7 +30,8 @@ void ServerManager::prepare_response_with_code(string* prepared_response, const 
     if (parameters.size() != 0){
         map<string,string>::iterator it;
         for (it = parameters.begin() ;it!=parameters.end();++it){
-            cout << "FIRST" << it->first << endl;
+            cout << "FIRST " << it->first << endl;
+            cout << "SECOND " << it->second << endl;
             size_t index = prepared_string.find(it->first);
             if (index != string::npos)
                 prepared_string.replace(index,(it->first).length(),it->second);
@@ -71,8 +72,10 @@ void ServerManager::handle_request(string* response, const string& request_data)
     } else if(required_file_name == "/results.html") {
             show_elections_results(response);
     } else if (required_file_name == "/vote.html" ) {
-        string username = get_request_parser.getParameter("username");
-        string password = get_request_parser.getParameter("password");
+        string username = get_request_parser.getParameter(USER_NAME);
+        string password = get_request_parser.getParameter(PASSWORD);
+        username = username.substr(1,username.length()-2);
+        password = password.substr(1,password.length()-2);
         prepare_candidates_lists(response, username, password);
     }else {
         ResponseCode code(NOT_FOUND);
@@ -85,8 +88,8 @@ void ServerManager::handle_login(string* response, const string& request_data) {
     map<string,string> parameters;
     if (valid_user(request_data)) {
         string username = get_request_parser.getParameter(USER_NAME);
-        username = username.substr(1,username.length()-2);
         string password = get_request_parser.getParameter(PASSWORD);
+        username = username.substr(1,username.length()-2);
         password = password.substr(1,password.length()-2);
         parameters["USERNAME_VAL"] = username;
         parameters["PASSWORD_VAL"] = password;
