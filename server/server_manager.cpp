@@ -70,7 +70,8 @@ void ServerManager::handle_request(string* response, const string& request_data)
     } else if(required_file_name == "/results.html") {
             show_elections_results(response);
     } else if (required_file_name == "/vote.html" ) {
-            prepare_candidates_lists(response);
+        cout << "THE DATA: " << request_data;
+        prepare_candidates_lists(response);
     }else {
         ResponseCode code(NOT_FOUND);
         prepare_response_with_code(response, NOTFOUND_HTML, code,parameters);
@@ -87,6 +88,8 @@ void ServerManager::handle_login(string* response, const string& request_data) {
         password = password.substr(1,password.length()-2);
         if (users_map_[get_request_parser.getParameter(USER_NAME)].getType() == "\"voter\""){
             parameters["FTP_LINK"] = "ftp://anonymous:" + username + "@localhost/";
+            parameters["USERNAME_VAL"] = get_request_parser.getParameter(USER_NAME);
+            parameters["PASSWORD_VAL"] = get_request_parser.getParameter(PASSWORD);
             prepare_response_from_file(response, string("../htdocs/voter_home.html"),parameters);
         } else {
             parameters["FTP_LINK"] = "ftp://" + username + ":" + password +
