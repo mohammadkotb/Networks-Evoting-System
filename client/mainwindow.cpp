@@ -276,6 +276,11 @@ void MainWindow::submit(QObject* obj){
                     }
                 }
                 i--;
+            } else if (parameter.contains("|!")) {
+                QString params = parameter.mid(parameter.indexOf("|!")+2);
+                QString type = params.mid(0, params.indexOf("|!"));
+                QString value = params.mid(params.indexOf("|!") + 2);
+                new_page += type + "=" + value;
             }
             if (i != lst->size() - 2) {
                 new_page += "&";

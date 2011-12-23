@@ -15,6 +15,7 @@
 #define PASSWORD_ATTRIB_VAL "password"
 #define SUBMIT_ATTRIB_VAL "submit"
 #define RADIO_ATTRIB_VAL "radio"
+#define HIDDEN_ATTRIB_VAL "hidden"
 
 GuiBuilder::GuiBuilder(GuiRenderer * engine){
     this->renderEngine = engine;
@@ -84,6 +85,8 @@ void GuiBuilder::build(QString & html){
                         // radio code
                         renderEngine->drawRadioButton(formName + "|~" + e.attribute(NAME_ATTRIB), e.attribute(NAME_ATTRIB));
                         parametersList->append(formName + "|~" + e.attribute(NAME_ATTRIB));
+                    } else if (e.attribute(TYPE_ATTRIB) == HIDDEN_ATTRIB_VAL) {
+                        parametersList->append(formName + "|!" + e.attribute(NAME_ATTRIB) + "|!" + e.attribute(VALUE_ATTRIB));
                     }
                 }else if (e.tagName() == LINK_TAG){
                     //anchor tag
