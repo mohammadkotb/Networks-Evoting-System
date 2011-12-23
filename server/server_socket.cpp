@@ -506,11 +506,11 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
         bool packet_lost = bt.shouldDoIt();
         if (!packet_lost){
             cout << "----> PACKET : "<< sync << " sent" << endl;
-            ret = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
+            int res = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
                     (const struct sockaddr *)client_address,sizeof(*client_address));
             //an error occurred couldn't send the packet
-            if (ret < 0)
-                return ret;
+            if (res <= 0)
+                return res;
         }else
             cout << "-||-> PACKET : "<< sync << " Simulated Loss" << endl;
             
@@ -553,10 +553,13 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
                 //we are done
                 correctACK = true;
                 done = true;
+                ret = packet.getDataLength();
             }
         }
-        if (!correctACK)
+        if (!correctACK){
             cout << "----- PACKET : "<< sync << " time out #" << count << endl;
+            return -1;
+        }
         count++;
     }
     send_sync_map[make_pair(port,ip)] = sync;

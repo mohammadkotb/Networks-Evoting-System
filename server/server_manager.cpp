@@ -197,7 +197,7 @@ bool ServerManager::handle_ftp_command(string* response, const string& command_d
             }
         }
     }else if (head == BYE){
-        *response = "Bye";
+        *response = "200 BYE";
         return false;
     } else if (head == RETR) {
         int x;

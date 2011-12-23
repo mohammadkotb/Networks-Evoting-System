@@ -171,6 +171,7 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
     //3 - if timeout go to step 1 else, we are done
     //--------
     //0
+    int ret = -1;
     bool sync = !sendLastSyncBit;
     bool done = false;
     Packet packet(false,sync,false,buffer,length);
@@ -181,11 +182,11 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
         bool packet_lost = bt.shouldDoIt();
         if (!packet_lost){
             cout << "----> PACKET : "<< sync << " sent" << endl;
-            int ret = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
+            int res = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
                     (const struct sockaddr *)&server_address,sizeof(server_address));
             //an error occured couldn't send the packet
-            if (ret < 0)
-                return ret;
+            if (res <= 0)
+                return res;
         }else
             cout << "-||-> PACKET : "<< sync << " Simulated Loss" << endl;
             
@@ -216,6 +217,7 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
                 //we are done
                 correctACK = true;
                 done = true;
+                ret = packet.getDataLength();
             }else{
                 int delta = (end.tv_sec*1000 + end.tv_usec/1000) -
                     (start.tv_sec*1000 + start.tv_usec/1000);
@@ -224,11 +226,14 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
                 if (timeout <= 0) break;
             }
         }
-        if (!correctACK)
+        if (!correctACK){
             cout << "----- PACKET : "<< sync << " time out #" << count << endl;
+            ret = -1;
+        }
         count++;
     }
     sendLastSyncBit = sync;
+    return ret;
 }
 
 int ClientSocket::recvfromTimeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec){

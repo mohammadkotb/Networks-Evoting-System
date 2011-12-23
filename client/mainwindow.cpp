@@ -363,7 +363,8 @@ void MainWindow::go(){
     }
 
     qDebug() << "requesting data ...";
-    if (socket->writeToSocket((char*)request.getSerialization().c_str()) < 0){
+    int ret = socket->writeToSocket((char*)request.getSerialization().c_str());
+    if (ret < 0){
         qDebug() << "couldn't send data";
         builder.build("<p>couldn't send requst to server</p>");
         ui->canvas->widget()->setCursor(Qt::ArrowCursor);
