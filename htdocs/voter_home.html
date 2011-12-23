@@ -3,7 +3,12 @@
     </head>
     <body>
         <p> Welcome Voter! </p>
-	<a href="vote.html"> Vote for a candidate </a>
+	<form action="vote.html">
+        <input type= "hidden" name = "username" value="USERNAME_VAL"/>
+	<input type= "hidden" name = "password" value="PASSWORD_VAL"/>	
+	<p> Vote for a candidate </p>	
+	<input type= "submit" value="Vote">
+	</form>
 	<a href="results.html"> View results </a>
         <a href ="FTP_LINK"> connect to ftp </a>
         <a href="login.html"> Sign out </a>
