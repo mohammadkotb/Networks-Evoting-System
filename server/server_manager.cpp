@@ -30,6 +30,7 @@ void ServerManager::prepare_response_with_code(string* prepared_response, const 
     if (parameters.size() != 0){
         map<string,string>::iterator it;
         for (it = parameters.begin() ;it!=parameters.end();++it){
+            cout << "FIRST" << it->first << endl;
             size_t index = prepared_string.find(it->first);
             if (index != string::npos)
                 prepared_string.replace(index,(it->first).length(),it->second);
@@ -70,8 +71,9 @@ void ServerManager::handle_request(string* response, const string& request_data)
     } else if(required_file_name == "/results.html") {
             show_elections_results(response);
     } else if (required_file_name == "/vote.html" ) {
-        cout << "THE DATA: " << request_data;
-        prepare_candidates_lists(response);
+        string username = get_request_parser.getParameter("username");
+        string password = get_request_parser.getParameter("password");
+        prepare_candidates_lists(response, username, password);
     }else {
         ResponseCode code(NOT_FOUND);
         prepare_response_with_code(response, NOTFOUND_HTML, code,parameters);
@@ -86,10 +88,10 @@ void ServerManager::handle_login(string* response, const string& request_data) {
         username = username.substr(1,username.length()-2);
         string password = get_request_parser.getParameter(PASSWORD);
         password = password.substr(1,password.length()-2);
+        parameters["USERNAME_VAL"] = username;
+        parameters["PASSWORD_VAL"] = password;
         if (users_map_[get_request_parser.getParameter(USER_NAME)].getType() == "\"voter\""){
             parameters["FTP_LINK"] = "ftp://anonymous:" + username + "@localhost/";
-            parameters["USERNAME_VAL"] = get_request_parser.getParameter(USER_NAME);
-            parameters["PASSWORD_VAL"] = get_request_parser.getParameter(PASSWORD);
             prepare_response_from_file(response, string("../htdocs/voter_home.html"),parameters);
         } else {
             parameters["FTP_LINK"] = "ftp://" + username + ":" + password +
@@ -254,7 +256,8 @@ void ServerManager::show_elections_results(string* response) {
     *response = html.str();
 }
 
-void ServerManager::prepare_candidates_lists(string* response) {
+void ServerManager::prepare_candidates_lists(string* response,
+    const string& username, const string& password) {
     stringstream html;
     html << "<html>" ;
     html << "<head></head>";
@@ -268,10 +271,11 @@ void ServerManager::prepare_candidates_lists(string* response) {
         }
     }
     html << "<input type=\"submit\"/>";
+    html << "<input type=\"hidden\" name=\"username\" value=\"" + username + "\">";
+    html << "<input type=\"hidden\" name=\"password\" value=\"" + password + "\">";
     html << "</form>";
     html << "</body>";
     html << "</html>";
-    cout << "??????????---------------------------------------------" << endl;
     cout << html.str() << endl;
     *response = html.str();
 }

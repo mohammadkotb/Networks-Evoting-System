@@ -79,7 +79,8 @@ private:
     void show_elections_results(string* response);
 
     // dynamically generate the html page with the candidates names
-    void prepare_candidates_lists(string* response);
+    void prepare_candidates_lists(string* response, const string& username,
+        const string& password);
 };
 
 #endif // SERVER_MANAGER_H
