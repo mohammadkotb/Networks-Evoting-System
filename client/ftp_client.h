@@ -27,7 +27,7 @@ public:
 
     // Sends a LIST command to the sever and retrieves the list of files in the
     // given directory.
-    void list_files(vector<FtpFile>* files, const string& directory);
+    bool list_files(vector<FtpFile>* files, const string& directory);
 
     // Initiate a server to server file transfer.
     bool remote_store(const string& remote_filename, const string& source_filename);

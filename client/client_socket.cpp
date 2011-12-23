@@ -7,7 +7,7 @@
 #define PACKET_LOSS_PROBABILITY 0
 #define ACK_LOSS_PROBABILITY 0
 
-#define PACKET_TIMEOUT 3000
+#define PACKET_TIMEOUT 2000
 #define TIMEOUT_COUNT 8
 
 using std::cout;

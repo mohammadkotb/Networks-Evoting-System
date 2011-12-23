@@ -49,11 +49,16 @@ int FtpClient::login(const string& username, const string& password) {
     }
 }
 
-void FtpClient::list_files(vector<FtpFile>* files, const string& directory) {
+bool FtpClient::list_files(vector<FtpFile>* files, const string& directory) {
     string list_command;
     command_builder_.list_command(&list_command, directory);
-    client_socket_.writeToSocket((char *) list_command.c_str());
-    client_socket_.readFromSocket(buffer_, BUFFER_SIZE);
+    int ret = client_socket_.writeToSocket((char *) list_command.c_str());
+    if (ret < 0) return false;
+    ret = client_socket_.readFromSocket(buffer_, BUFFER_SIZE);
+    if (ret < 0) return false;
+    //in case of empty folder a response with one byte (null character)
+    //is returned
+    if (ret == 1) return true;
     string response(buffer_);
     FtpParser parser;
     parser.read_server_list(response);
@@ -119,11 +124,15 @@ void * upload_aux(void *args){
 bool FtpClient::remote_store(const string& remote_filename, const string& source_filename) {
     string store_command;
     command_builder_.upload_command(&store_command, remote_filename);
-    client_socket_.writeToSocket((char *) store_command.c_str());
+    int ret = client_socket_.writeToSocket((char *) store_command.c_str());
+    if (ret < 0)
+        return false;
 
 //========================================================
     char response[1<<8];
-    client_socket_.readFromSocket(response, 1<<8);
+    ret = client_socket_.readFromSocket(response, 1<<8);
+    if (ret < 0)
+        return false;
     cout << "THIS IS THE CLIENT FD: " << response;
     int client_fd;
     sscanf(response, "%d", &client_fd);
@@ -200,11 +209,13 @@ bool FtpClient::retrieve_file(const string& fileName,const string & destination)
     string download_command;
     //command_builder_.download_command(&download_command, fileName);
     command_builder_.download_command(&download_command, fileName);
-    client_socket_.writeToSocket((char*) download_command.c_str());
+    int ret = client_socket_.writeToSocket((char*) download_command.c_str());
+    if (ret < 0) return false;
 
 //========================================================
     char response[1<<8];
-    client_socket_.readFromSocket(response, 1<<8);
+    ret = client_socket_.readFromSocket(response, 1<<8);
+    if (ret < 0) return false;
     cout << "THIS IS THE CLIENT FD: " << response;
     int client_fd;
     sscanf(response, "%d", &client_fd);
@@ -233,9 +244,11 @@ bool FtpClient::retrieve_file(const string& fileName,const string & destination)
 bool FtpClient::abort() {
     string abort_command;
     command_builder_.abort_command(&abort_command);
-    client_socket_.writeToSocket((char*)abort_command.c_str());
+    int ret = client_socket_.writeToSocket((char*)abort_command.c_str());
+    if (ret < 0) return false;
     char response[1<<10];
-    client_socket_.readFromSocket(response,1 << 10 );
+    ret = client_socket_.readFromSocket(response,1 << 10 );
+    if (ret < 0) return false;
     return true;
 }
 

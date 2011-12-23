@@ -81,7 +81,12 @@ void MainWindow::ftpDisconnect(){
     }
 }
 void MainWindow::ftpConnect(){
-    //TODO:check for return values of login
+    if (ftpConnected){
+        QMessageBox::warning(this, tr("Error"),
+         tr("please disconnect first form the current session"));
+        return;
+    }
+
     try{
         ftpClient = new FtpClient(ui->hostLineEdit->text().toStdString(),7070);
         QString username = "\"" + ui->usernameLineEdit->text() +  "\"";
@@ -116,7 +121,12 @@ void MainWindow::fetchFolder(QTreeWidgetItem *item, int c){
     qDebug() << "fetching .. " << itemName;
     vector<FtpFile> files;
     //request file list
-    ftpClient->list_files(&files,itemName.toStdString());
+    bool success = ftpClient->list_files(&files,itemName.toStdString());
+    if(!success){
+        QMessageBox::warning(this, tr("Connection Error"),
+            tr("couldn't get files list, server might be unavailable"));
+        return;
+    }
     vector<QTreeWidgetItem*> children;
     for (int i=0;i<item->childCount();i++)
         children.push_back(item->child(i));
@@ -184,7 +194,7 @@ void MainWindow::downloadFile(){
     bool canDownload =ftpClient->retrieve_file(remoteFile.toStdString(),info.absoluteFilePath().toStdString());
     if (!canDownload){
     QMessageBox::warning(this, tr("download Error"),
-       tr("please wait for current transmission to finish"));
+       tr("server might not available, please make sure no current transmission is going"));
     }
 }
 
@@ -226,7 +236,11 @@ void MainWindow::uploadFile(){
     }
     //do the uploading
     string remote = remoteFolder.toStdString() + info.fileName().toStdString();
-    ftpClient->remote_store(remote,info.absoluteFilePath().toStdString());
+    bool success = ftpClient->remote_store(remote,info.absoluteFilePath().toStdString());
+    if (!success){
+        QMessageBox::warning(this, tr("upload Error"),
+           tr("error while uploading"));
+    }
 }
 
 
