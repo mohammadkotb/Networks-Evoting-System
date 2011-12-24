@@ -166,7 +166,7 @@ bool ServerSocket::writeToSocket(char buffer[], int size, void *args){
 		//int data_size = sendto(socket_file_descriptor, buffer, size, 0, (struct sockaddr *) client_address, sizeof(*client_address));
 		//success &= (data_size >= 0);
 		sockaddr_in *client_address = (sockaddr_in *) ar[3];
-        success &= (reliableUdpSend(buffer,size,client_address) > 0);
+        success &= (reliableUdpSend(buffer,size,client_address) >= 0);
 	}
 
 	if(!success){
