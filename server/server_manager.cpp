@@ -77,7 +77,14 @@ void ServerManager::handle_request(string* response, const string& request_data)
         username = username.substr(1,username.length()-2);
         password = password.substr(1,password.length()-2);
         prepare_candidates_lists(response, username, password);
-    }else {
+    } else if (required_file_name == "/vote.php") {
+        if (valid_vote(request_data)) {
+            handle_login(response, request_data);
+        } else {
+            ResponseCode code(NOT_FOUND);
+            prepare_response_with_code(response, NOTFOUND_HTML, code,parameters);
+        }
+    } else {
         ResponseCode code(NOT_FOUND);
         prepare_response_with_code(response, NOTFOUND_HTML, code,parameters);
     }
@@ -89,6 +96,11 @@ void ServerManager::handle_login(string* response, const string& request_data) {
     if (valid_user(request_data)) {
         string username = get_request_parser.getParameter(USER_NAME);
         string password = get_request_parser.getParameter(PASSWORD);
+        if(users_map_[username].getVoted()) {
+            parameters["VOTE_TAG"] = "<p>Your Vote has been recorded.</p>";
+        } else {
+            parameters["VOTE_TAG"] = "<input type= \"submit\" value=\"Vote\">";
+        }
         username = username.substr(1,username.length()-2);
         password = password.substr(1,password.length()-2);
         parameters["USERNAME_VAL"] = username;
@@ -113,6 +125,24 @@ bool ServerManager::valid_user(const string& request_data) {
     User system_user = users_map_[get_request_parser.getParameter(USER_NAME)];
     if(get_request_parser.getParameter(PASSWORD) != system_user.getPassword())
         return false;
+    return true;
+}
+
+bool ServerManager::valid_vote(const string& request_data) {
+    if (!valid_user(request_data))
+        return false;
+    // valid user name and password
+    HttpGetRequestParser get_request_parser(request_data);
+    string username = get_request_parser.getParameter(USER_NAME);
+    string selected = get_request_parser.getParameter("selected");
+    if(users_map_.count(selected) == 0) return false;
+    if(users_map_[selected].getType() != "\"candidate\"") return false;
+    User user = users_map_[username];
+    if(user.getVoted())
+        return false;
+    addVote(selected);
+    user.setVoted(true);
+    users_map_[username] = user;
     return true;
 }
 

@@ -68,6 +68,9 @@ private:
     // Checks whether the user data is valid or not.
     bool valid_user(const string& request_data);
 
+    // Checks whether the vote data is valid or not.
+    bool valid_vote(const string& request_data);
+
     // Handles the login procedures when receiving a request for the login.php
     // page.
     void handle_login(string* response, const string& request_data);
