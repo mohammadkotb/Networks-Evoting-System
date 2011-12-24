@@ -30,8 +30,6 @@ void ServerManager::prepare_response_with_code(string* prepared_response, const 
     if (parameters.size() != 0){
         map<string,string>::iterator it;
         for (it = parameters.begin() ;it!=parameters.end();++it){
-            cout << "FIRST " << it->first << endl;
-            cout << "SECOND " << it->second << endl;
             size_t index = prepared_string.find(it->first);
             if (index != string::npos)
                 prepared_string.replace(index,(it->first).length(),it->second);
@@ -70,19 +68,26 @@ void ServerManager::handle_request(string* response, const string& request_data)
             prepare_response_from_file(response, WRONG_TYPE_HTML, parameters);
         }
     } else if(required_file_name == "/results.html") {
-            show_elections_results(response);
+            string username = get_request_parser.getParameter(USER_NAME);
+            string password = get_request_parser.getParameter(PASSWORD);
+            if(username.length() >= 2)
+                username = username.substr(1,username.length()-2);
+            if(password.length() >= 2)
+                password = password.substr(1,password.length()-2);
+            show_elections_results(response, username, password);
     } else if (required_file_name == "/vote.html" ) {
         string username = get_request_parser.getParameter(USER_NAME);
         string password = get_request_parser.getParameter(PASSWORD);
-        username = username.substr(1,username.length()-2);
-        password = password.substr(1,password.length()-2);
+        if(username.length() >= 2)
+            username = username.substr(1,username.length()-2);
+        if(password.length() >= 2)
+            password = password.substr(1,password.length()-2);
         prepare_candidates_lists(response, username, password);
     } else if (required_file_name == "/vote.php") {
         if (valid_vote(request_data)) {
             handle_login(response, request_data);
         } else {
-            ResponseCode code(NOT_FOUND);
-            prepare_response_with_code(response, NOTFOUND_HTML, code,parameters);
+            handle_login(response, request_data);
         }
     } else {
         ResponseCode code(NOT_FOUND);
@@ -101,10 +106,14 @@ void ServerManager::handle_login(string* response, const string& request_data) {
         } else {
             parameters["VOTE_TAG"] = "<input type= \"submit\" value=\"Vote\">";
         }
-        username = username.substr(1,username.length()-2);
-        password = password.substr(1,password.length()-2);
+        if(username.length() >= 2)
+            username = username.substr(1,username.length()-2);
+        if(password.length() >= 2)
+            password = password.substr(1,password.length()-2);
         parameters["USERNAME_VAL"] = username;
+        parameters["USERNAME_IN"] = username;
         parameters["PASSWORD_VAL"] = password;
+        parameters["PASSWORD_IN"] = password;
         if (users_map_[get_request_parser.getParameter(USER_NAME)].getType() == "\"voter\""){
             parameters["FTP_LINK"] = "ftp://anonymous:" + username + "@localhost/";
             prepare_response_from_file(response, string("../htdocs/voter_home.html"),parameters);
@@ -270,7 +279,8 @@ void ServerManager::addVote(string username){
     pthread_mutex_unlock(&votes_map_mutex);
 }
 
-void ServerManager::show_elections_results(string* response) {
+void ServerManager::show_elections_results(string* response,
+   const string& username, const string& password) {
     stringstream html;
     html << "<html>";
     html << "<head></head>";
@@ -284,6 +294,11 @@ void ServerManager::show_elections_results(string* response) {
         html << (*itr).first << ": ";
         html << (*itr).second << " votes." << "</p>";
     }
+    html << "<form action=login.php>";
+    html << "<input type=\"hidden\" name=\"username\" value=\"" + username + "\">";
+    html << "<input type=\"hidden\" name=\"password\" value=\"" + password + "\">";
+    html << "<input type=\"submit\" value=\"Back to home page\"/>";
+    html << "</form>";
     html << "</body>";
     html << "</html>";
     *response = html.str();
@@ -305,10 +320,9 @@ void ServerManager::prepare_candidates_lists(string* response,
     }
     html << "<input type=\"hidden\" name=\"username\" value=\"" + username + "\">";
     html << "<input type=\"hidden\" name=\"password\" value=\"" + password + "\">";
-    html << "<input type=\"submit\"/>";
+    html << "<input type=\"submit\" value=\"Add Vote\"/>";
     html << "</form>";
     html << "</body>";
     html << "</html>";
-    cout << html.str() << endl;
     *response = html.str();
 }

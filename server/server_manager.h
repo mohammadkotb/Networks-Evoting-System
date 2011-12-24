@@ -79,7 +79,8 @@ private:
     void addVote(string username);
 
     // dynamically generating show elections results for users
-    void show_elections_results(string* response);
+    void show_elections_results(string* response, const string& username,
+        const string& password);
 
     // dynamically generate the html page with the candidates names
     void prepare_candidates_lists(string* response, const string& username,
