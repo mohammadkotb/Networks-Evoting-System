@@ -88,6 +88,8 @@ class ServerSocket{
         int reliableUdpSend(char* buffer,int length,struct sockaddr_in * client_address);
 
         int recvfromTimeout(int socket_fd,char * buff,int bufflen,struct sockaddr * client,socklen_t* client_len,int msec);
+
+        void closeConnection(int port,unsigned long ip);
 	public:
 		// Constructors
 		ServerSocket();

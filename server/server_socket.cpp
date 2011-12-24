@@ -100,8 +100,25 @@ ServerSocket::ServerSocket(char connection_type, bool (*process_fn)(void*)){
 	}
 }
 
-ServerSocket::ServerSocket(){
+ServerSocket::ServerSocket(){}
 
+void ServerSocket::closeConnection(int port,unsigned long ip){
+    pthread_mutex_t * thread_mutex = mutex_map[make_pair(port,ip)];
+    delete(thread_mutex);
+    mutex_map.erase(make_pair(port,ip));
+
+    pthread_mutex_t * ack_mutex = ack_mutex_map[make_pair(port,ip)];
+    delete(ack_mutex);
+    mutex_map.erase(make_pair(port,ip));
+
+    send_sync_map.erase(make_pair(port,ip));
+    receive_sync_map.erase(make_pair(port,ip));
+
+    char * buffer = buffers_map[make_pair(port,ip)];
+    delete(buffer);
+    buffers_map.erase(make_pair(port,ip));
+
+    buffers_lengths_map.erase(make_pair(port,ip));
 }
 
 bool ServerSocket::isRunning(){
@@ -284,6 +301,8 @@ void ServerSocket::handleUDPRequest(void *args){
 
     //TODO:
     //free args
+    closeConnection(cl_copy->sin_port,cl_copy->sin_addr.s_addr);
+
     delete((int *)ar[1]);
     delete(cl_copy);
     delete(ar);
@@ -558,7 +577,7 @@ int ServerSocket::reliableUdpSend(char* buffer,int length,struct sockaddr_in * c
         }
         if (!correctACK){
             cout << "----- PACKET : "<< sync << " time out #" << count << endl;
-            return -1;
+            ret = -1;
         }
         count++;
     }
