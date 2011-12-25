@@ -90,34 +90,34 @@ void * upload_aux(void *args){
 
     // MOUSTAFA PASTE BIN
 
-    int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
-    //udp buffer size @ server is 1024 so client must send with the same
-    //rate in order not to overflow the server
-    bufSz = 1024;
+    //int bufSz=1<<20; //this MUST BE >= buffer size of the FTP server, so as not to cause buffer over flow, and drop data
+
+    //udp buffer size @ server is 2048 so client must send with
+    //slower rate in order not to overflow the server
+    int bufSz = 1024;
     char packet[bufSz];
     memset(packet,0,bufSz);
     int n, total=0;
 
     if(!fin){
-              cerr << "Error! couldn't open the file: " << file_name_buf << endl;
-              // close(fd);
-              return false;
-      }
+        cerr << "Error! couldn't open the file: " << file_name_buf << endl;
+        // close(fd);
+        return false;
+    }
 
-      sleep(1);
-      while((n=fread(packet, 1, bufSz, fin))){
-          dataSocket.writeToSocket(packet, n);
-          sleep(2);
-      }
-      //TODO::REMOVE THIS
-      //send dummy line
-      dataSocket.writeToSocket((char*)"",0);
+    while((n=fread(packet, 1, bufSz, fin))){
+        dataSocket.writeToSocket(packet, n);
+        sleep(1);
+    }
+    //TODO::REMOVE THIS
+    //send dummy line
+    dataSocket.writeToSocket((char*)"",0);
 
-      cerr << "closing file " << file_name_buf << endl;
-      if(fclose(fin)==EOF){
-              cerr << "Error! couldn't close the file: " << file_name_buf << endl;
-              return false;
-      }
+    cerr << "closing file " << file_name_buf << endl;
+    if(fclose(fin)==EOF){
+        cerr << "Error! couldn't close the file: " << file_name_buf << endl;
+        return false;
+    }
 
     return NULL;
 }
@@ -188,9 +188,9 @@ void * download_aux(void *args){
     int n, total=0;
 
     while((n = dataSocket.readFromSocket(packet, bufSz))){
-            total+=n;
-            fwrite(packet, 1, n, fout);
-            cout << "chunk" << endl;
+        total+=n;
+        fwrite(packet, 1, n, fout);
+        cout << "chunk" << endl;
     }
 
     fclose(fout);

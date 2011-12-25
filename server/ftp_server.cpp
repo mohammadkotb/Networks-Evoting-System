@@ -76,7 +76,7 @@ bool FTPServer::downloadFile(char *fileName,int port, void *args){
                 return false;
         }
 
-        int bufSz = getDataBufferSize();
+        int bufSz = getDataBufferSize()/2;
         char packet[bufSz];
 
 
@@ -84,8 +84,8 @@ bool FTPServer::downloadFile(char *fileName,int port, void *args){
         cout << "sending file ..." << endl;
         while(!(state->cancel_transmission) && (n=fread(packet, 1, bufSz, fin))){
             dataServerSocket->writeToSocket(packet, n, args);
-            cout << "CHUNK" << endl;
-            sleep(5);
+            cout << "CHUNK ---> sent" << endl;
+            sleep(1);
         }
         cout << "download complete" << endl;
 
@@ -157,8 +157,7 @@ bool FTPServer::uploadFile(char *fileName,int port, void *args){
         while(!(state->cancel_transmission) && ((n = dataServerSocket->readFromSocket(packet, bufSz,args)) > 0)){
                 total+=n;
                 fwrite(packet, 1, n, fout);
-                cout << "chunk" << endl;
-                sleep(3);
+                cout << "CHUNK <--- received" << endl;
         }
         cout << "Upload Complete" << endl;
 

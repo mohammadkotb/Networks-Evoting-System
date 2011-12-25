@@ -23,8 +23,8 @@ using std::pair;
 
 const int defaultControlPort = 7070;
 const int defaultDataPort = 7071;
-const int defaultControlBufferSize = 1<<10;
-const int defaultDataBufferSize = 1<<20;
+const int defaultControlBufferSize = 2048;
+const int defaultDataBufferSize = 2048;
 enum DataTransferType { UPLOAD, DOWNLOAD };
 
 class ftp_state{
