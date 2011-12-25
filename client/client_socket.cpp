@@ -4,10 +4,10 @@
 #include <sys/time.h>
 #include <cerrno>
 
-#define PACKET_LOSS_PROBABILITY 0
-#define ACK_LOSS_PROBABILITY 0
+#define PACKET_LOSS_PROBABILITY 0.1
+#define ACK_LOSS_PROBABILITY 0.1
 
-#define PACKET_TIMEOUT 2000
+#define PACKET_TIMEOUT 1000
 #define TIMEOUT_COUNT 8
 
 using std::cout;
@@ -120,16 +120,16 @@ int ClientSocket::readFromSocket(char buf[], int buffer_size){
                 continue;
             }
 
-            cout << "<---- PACKET : " << packet.getSyncBit() << " received" << endl;
+            cout << "----> PACKET : " << packet.getSyncBit() << " received" << endl;
 
             //send ack packet
             Packet ackPacket(true,packet.getSyncBit(),false,(char*)"",0);
             if (!bernoulli.shouldDoIt()){
                 sendto(socket_file_descriptor, ackPacket.getRawData(), ackPacket.getRawDataLength(),
                         0, (struct sockaddr *)&server_address, sizeof(server_address));
-                cout << "----> PACKET : Ack "<< packet.getSyncBit() << " message Sent" << endl;
+                cout << "<---- PACKET : Ack "<< packet.getSyncBit() << " message Sent" << endl;
             }else{
-                cout << "-||-> PACKET : Ack "<< packet.getSyncBit() << " message Simulated Loss" << endl;
+                cout << "<-||- PACKET : Ack "<< packet.getSyncBit() << " message Simulated Loss" << endl;
             }
 
             if (expectedSyncBit != packet.getSyncBit()){
@@ -181,14 +181,14 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
         //1
         bool packet_lost = bt.shouldDoIt();
         if (!packet_lost){
-            cout << "----> PACKET : "<< sync << " sent" << endl;
+            cout << "<---- PACKET : "<< sync << " sent" << endl;
             int res = sendto(socket_file_descriptor, packet.getRawData(), packet.getRawDataLength(), 0,
                     (const struct sockaddr *)&server_address,sizeof(server_address));
             //an error occured couldn't send the packet
             if (res <= 0)
                 return res;
         }else
-            cout << "-||-> PACKET : "<< sync << " Simulated Loss" << endl;
+            cout << "<-||- PACKET : "<< sync << " Simulated Loss" << endl;
             
         //2
         bool correctACK = false;
@@ -213,7 +213,7 @@ int ClientSocket::reliableUdpSend(char* buffer,int length){
             //check packet
             Packet ackPacket(data,ackret);
             if (ackPacket.isAck() && ackPacket.getSyncBit() == sync){
-                cout << "<---- ACK " << ackPacket.getSyncBit() << " packet received" << endl;
+                cout << "----> ACK " << ackPacket.getSyncBit() << " packet received" << endl;
                 //we are done
                 correctACK = true;
                 done = true;
