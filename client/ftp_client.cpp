@@ -63,6 +63,7 @@ bool FtpClient::list_files(vector<FtpFile>* files, const string& directory) {
     FtpParser parser;
     parser.read_server_list(response);
     parser.get_files(files);
+    return true;
 }
 
 void * upload_aux(void *args){
