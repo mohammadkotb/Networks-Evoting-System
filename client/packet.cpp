@@ -2,6 +2,8 @@
 #include "stdlib.h"
 #include "string.h"
 
+#define KEY 0xAA
+
 Packet::Packet(bool ack,bool sync,bool disconnect, char * data,int length){
     this->ack = ack;
     this->sync = sync;
@@ -13,9 +15,6 @@ Packet::Packet(bool ack,bool sync,bool disconnect, char * data,int length){
     //calculations
     this->rawData = (char *)malloc(sizeof(char) * (length + 1));
     this->rawDataLength = length+1;
-    //copy data into rawData
-    char * data_p = rawData +1;
-    memcpy(data_p,data,length);
 
     //adjust headers
     int header = 0;
@@ -23,21 +22,31 @@ Packet::Packet(bool ack,bool sync,bool disconnect, char * data,int length){
     if (sync) header |= 10;
     if (disconnect) header |= 1;
     this->rawData[0] = (char)header;
+
+    //encrypt the data (simple xor encryption)
+    this->rawData[0] = (char)(this->rawData[0] ^ (char)KEY);
+    for(int i=0;i<length;++i)
+        this->rawData[i+1] = (char)(data[i] ^ (char)KEY);
 }
 
 Packet::Packet(char * raw_data,int length){
     this->createdFromRawData = true;
     this->rawData = raw_data;
     this->rawDataLength = length;
+
     //create data buffer
     this->data = (char *)malloc(sizeof(char) * (length-1));
     this->dataLength = length-1;
+
+    //decrypt the data
+    int header = (char)(rawData[0] ^ (char)KEY);
+    for(int i=0;i<length-1;++i)
+        this->data[i] = (char)(raw_data[i+1] ^ (char)KEY);
+
     //extract headers
-    int header = raw_data[0];
     ack = header & 100;
     sync = header & 10;
     disconnect = header & 1;
-    memcpy(data,raw_data+1,length-1);
 }
 
 bool Packet::isAck(){
@@ -75,3 +84,4 @@ Packet::~Packet(){
         if (data)
             delete(data);
 }
+
